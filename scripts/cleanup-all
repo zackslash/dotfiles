@@ -1,0 +1,46 @@
+
+# list and optionally remove orphaned packages
+echo "Orphaned packages"
+mapfile -t orphans < <(pacman -Qdtq)
+if [[ ${#orphans[@]} -eq 0 ]]; then
+    echo "No orphaned packages."
+else
+    for pkg in "${orphans[@]}"; do
+        read -rp "Remove orphan '$pkg'? [Y/n] " ans
+        [[ "$ans" =~ ^[Nn]$ ]] || sudo pacman -Rns "$pkg"
+    done
+fi
+
+
+# clean pacman cache (keep last 2 versions)
+echo "Pacman cache"
+cache_output=$(paccache -dvk2)
+echo "$cache_output"
+if echo "$cache_output" | grep -q "no candidate packages found"; then
+    echo "No cached packages to remove."
+else
+    read -rp "Remove old cached packages? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || paccache -rk2
+fi
+
+
+# list broken symlinks
+echo "Broken symlinks"
+mapfile -t broken_links < <(sudo find /usr /etc /home -xtype l -not -path "*/Steam/*" -not -path "*/.steampath" -not -path "/home/luke/.config/mozilla/*")
+if [[ ${#broken_links[@]} -eq 0 ]]; then
+    echo "No broken symlinks."
+else
+    for link in "${broken_links[@]}"; do
+        echo "$link"
+    done
+    read -rp "Remove all broken symlinks? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo rm "${broken_links[@]}"
+fi
+
+# clean journal logs older than 2 weeks
+echo "Journal logs"
+sudo journalctl --vacuum-time=2weeks
+
+# systemctl
+echo "failed services"
+systemctl --failed

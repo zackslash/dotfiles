@@ -1,0 +1,85 @@
+{
+  "preset": "dynamic",
+  "presets": {
+    "dynamic": {
+      "oracle": {
+        "model": "github-copilot/claude-opus-4.6",
+        "variant": "high",
+        "skills": [],
+        "mcps": []
+      },
+      "orchestrator": {
+        "model": "github-copilot/claude-sonnet-4.6",
+        "skills": [
+          "*"
+        ],
+        "mcps": [
+          "websearch"
+        ]
+      },
+      "fixer": {
+        "model": "github-copilot/claude-sonnet-4.6",
+        "variant": "low",
+        "skills": [],
+        "mcps": []
+      },
+      "designer": {
+        "model": "github-copilot/claude-sonnet-4.6",
+        "variant": "medium",
+        "skills": [
+          "agent-browser"
+        ],
+        "mcps": []
+      },
+      "librarian": {
+        "model": "github-copilot/claude-haiku-4.5",
+        "variant": "low",
+        "skills": [],
+        "mcps": [
+          "websearch",
+          "context7",
+          "grep_app"
+        ]
+      },
+      "explorer": {
+        "model": "github-copilot/claude-haiku-4.5",
+        "variant": "low",
+        "skills": [],
+        "mcps": []
+      }
+    }
+  },
+  "balanceProviderUsage": false,
+  "fallback": {
+    "enabled": true,
+    "timeoutMs": 15000,
+    "chains": {
+      "oracle": [
+        "opencode/gpt-5-nano"
+      ],
+      "orchestrator": [
+        "opencode/gpt-5-nano"
+      ],
+      "fixer": [
+        "opencode/minimax-m2.5-free",
+        "opencode/gpt-5-nano"
+      ],
+      "designer": [
+        "opencode/gpt-5-nano"
+      ],
+      "librarian": [
+        "opencode/minimax-m2.5-free",
+        "opencode/gpt-5-nano"
+      ],
+      "explorer": [
+        "opencode/minimax-m2.5-free",
+        "opencode/gpt-5-nano"
+      ]
+    }
+  },
+  "tmux": {
+    "enabled": true,
+    "layout": "tiled",
+    "main_pane_size": 50
+  }
+}
