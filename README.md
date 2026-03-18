@@ -26,10 +26,14 @@ dotfiles push
 | Tool | Purpose |
 |------|---------|
 | [Neovim](https://neovim.io/) (v0.10+) | Editor |
+| [tmux](https://github.com/tmux/tmux) | Terminal multiplexer (auto-started by `.bashrc`) |
+| [TPM](https://github.com/tmux-plugins/tpm) | Tmux plugin manager — `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`, then `prefix + I` to install plugins |
 | [opencode](https://opencode.ai/) | AI coding assistant (terminal) |
 | [Go](https://go.dev/) (1.21+) | Go toolchain |
 | [delve](https://github.com/go-delve/delve) | Go debugger — `go install github.com/go-delve/delve/cmd/dlv@latest` |
 | [GitHub Copilot](https://github.com/features/copilot) | AI completions (subscription required) — run `:Copilot auth` after first Neovim launch |
+| [yay](https://github.com/Jguer/yay) | AUR helper (Arch Linux) |
+| [flatpak](https://flatpak.org/) | Flatpak package manager |
 
 ## Neovim
 
