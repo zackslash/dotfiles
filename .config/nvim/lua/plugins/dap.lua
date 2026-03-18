@@ -49,31 +49,6 @@ return {
         -- Explicit path so Neovim finds dlv regardless of its $PATH
         path = vim.fn.expand("~/go/bin/dlv"),
       },
-      dap_configurations = {
-        {
-          type = "go",
-          name = "Debug package (default)",
-          request = "launch",
-          program = "${fileDirname}", -- debug the package of the open file
-        },
-        {
-          type = "go",
-          name = "Debug test file",
-          request = "launch",
-          mode = "test",
-          program = "${fileDirname}",
-        },
-        {
-          type = "go",
-          name = "Debug with args",
-          request = "launch",
-          program = "${fileDirname}",
-          args = function()
-            local args = vim.fn.input("Args: ")
-            return vim.split(args, " ", { trimempty = true })
-          end,
-        },
-      },
     },
     keys = {
       { "<leader>dt", function() require("dap-go").debug_test() end,         desc = "Debug nearest Go test" },
