@@ -44,15 +44,17 @@ return {
     "leoluz/nvim-dap-go",
     ft = "go",
     dependencies = { "mfussenegger/nvim-dap" },
-    opts = {
-      delve = {
-        -- Explicit path so Neovim finds dlv regardless of its $PATH
-        path = vim.fn.expand("~/go/bin/dlv"),
-      },
-    },
+    config = function()
+      require("dap-go").setup({
+        delve = {
+          path = vim.fn.expand("~/go/bin/dlv"),
+          cwd = vim.fn.getcwd(), -- use Neovim's working directory as project root
+        },
+      })
+    end,
     keys = {
-      { "<leader>dt", function() require("dap-go").debug_test() end,         desc = "Debug nearest Go test" },
-      { "<leader>dT", function() require("dap-go").debug_last_test() end,    desc = "Re-run last Go test" },
+      { "<leader>dt", function() require("dap-go").debug_test() end,      desc = "Debug nearest Go test" },
+      { "<leader>dT", function() require("dap-go").debug_last_test() end, desc = "Re-run last Go test" },
     },
   },
 }
