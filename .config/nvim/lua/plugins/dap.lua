@@ -52,16 +52,26 @@ return {
       dap_configurations = {
         {
           type = "go",
-          name = "Debug current file",
+          name = "Debug package (default)",
           request = "launch",
-          program = "${file}",
+          program = "${fileDirname}", -- debug the package of the open file
         },
         {
           type = "go",
-          name = "Debug test",
+          name = "Debug test file",
           request = "launch",
           mode = "test",
-          program = "${file}",
+          program = "${fileDirname}",
+        },
+        {
+          type = "go",
+          name = "Debug with args",
+          request = "launch",
+          program = "${fileDirname}",
+          args = function()
+            local args = vim.fn.input("Args: ")
+            return vim.split(args, " ", { trimempty = true })
+          end,
         },
       },
     },
