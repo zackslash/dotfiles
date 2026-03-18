@@ -36,6 +36,12 @@ return {
       { "<leader>do", function() require("dap").step_out() end,                                         desc = "Step out" },
       { "<leader>dq", function() require("dap").terminate() end,                                        desc = "Terminate" },
       { "<leader>dr", function() require("dap").repl.open() end,                                        desc = "Open REPL" },
+      -- F-key shortcuts for active debugging (avoids F10/F11/F12 grabbed by terminal/DE)
+      { "<F5>",       function() require("dap").continue() end,                                         desc = "Debug: Continue" },
+      { "<F6>",       function() require("dap").step_over() end,                                        desc = "Debug: Step over" },
+      { "<F7>",       function() require("dap").step_into() end,                                        desc = "Debug: Step into" },
+      { "<F8>",       function() require("dap").step_out() end,                                         desc = "Debug: Step out" },
+      { "<F9>",       function() require("dap").toggle_breakpoint() end,                                desc = "Debug: Toggle breakpoint" },
     },
   },
 
