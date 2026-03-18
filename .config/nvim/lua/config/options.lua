@@ -4,6 +4,10 @@
 
 vim.opt.relativenumber = false
 
+-- Remove "How-to disable mouse" from right-click popup menu
+vim.cmd([[aunmenu PopUp.How-to\ disable\ mouse]])
+vim.cmd([[aunmenu PopUp.-2-]])
+
 if vim.g.vscode then
   -- Let VSCode control all visual chrome
   vim.opt.cmdheight = 1
