@@ -56,7 +56,6 @@ return {
             request = "launch",
             program = "${fileDirname}", -- whole package, not just the open file
             buildFlags = "",
-            outputMode = "remote",
           },
           {
             type = "go",
@@ -64,7 +63,6 @@ return {
             request = "launch",
             program = "${fileDirname}",
             buildFlags = "",
-            outputMode = "remote",
             args = function()
               return coroutine.create(function(co)
                 vim.ui.input({ prompt = "Args: " }, function(input)
