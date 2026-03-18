@@ -22,10 +22,17 @@ if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
   exec tmux new-session
 fi
 
-# Port for opencode tmux support - auto-selects a free port per instance
-opencode() {
-  local port
-  port=$(python3 -c "
+# Port for opencode tmux support - one shared port per tmux window
+# All panes within the same window share the same OPENCODE_PORT
+if [ -n "$TMUX" ]; then
+  # Check if this window already has a port assigned (stored in tmux window env)
+  _win_port=$(tmux show-environment -w OPENCODE_PORT 2>/dev/null | grep '^OPENCODE_PORT=' | cut -d= -f2)
+  if [ -n "$_win_port" ]; then
+    # Reuse the port already assigned to this window
+    export OPENCODE_PORT=$_win_port
+  else
+    # Assign a new free port to this window and store it in the tmux window environment
+    _win_port=$(python3 -c "
 import socket
 for p in range(4097, 4201):
     try:
@@ -37,7 +44,14 @@ for p in range(4097, 4201):
     except OSError:
         pass
 ")
-  export OPENCODE_PORT=$port
+    export OPENCODE_PORT=$_win_port
+    tmux set-environment -w OPENCODE_PORT "$_win_port"
+  fi
+  unset _win_port
+fi
+
+opencode() {
+  local port="${OPENCODE_PORT:-4097}"
   command opencode --port "$port" "$@"
 }
 
