@@ -45,6 +45,10 @@ return {
     ft = "go",
     dependencies = { "mfussenegger/nvim-dap" },
     opts = {
+      delve = {
+        -- Explicit path so Neovim finds dlv regardless of its $PATH
+        path = vim.fn.expand("~/go/bin/dlv"),
+      },
       dap_configurations = {
         {
           type = "go",
