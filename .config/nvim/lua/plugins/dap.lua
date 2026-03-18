@@ -48,7 +48,31 @@ return {
       require("dap-go").setup({
         delve = {
           path = vim.fn.expand("~/go/bin/dlv"),
-          cwd = vim.fn.getcwd(), -- use Neovim's working directory as project root
+        },
+        dap_configurations = {
+          {
+            type = "go",
+            name = "Debug package",
+            request = "launch",
+            program = "${fileDirname}", -- whole package, not just the open file
+            buildFlags = "",
+            outputMode = "remote",
+          },
+          {
+            type = "go",
+            name = "Debug package (args)",
+            request = "launch",
+            program = "${fileDirname}",
+            buildFlags = "",
+            outputMode = "remote",
+            args = function()
+              return coroutine.create(function(co)
+                vim.ui.input({ prompt = "Args: " }, function(input)
+                  coroutine.resume(co, vim.split(input or "", " ", { trimempty = true }))
+                end)
+              end)
+            end,
+          },
         },
       })
     end,
