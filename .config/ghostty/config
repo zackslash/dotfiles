@@ -1,3 +1,5 @@
+window-theme = dark
+
 # Background matching COSMIC Dark theme (opacity 83% = 0.83)
 background = 1b1b1b
 background-opacity = 0.83
