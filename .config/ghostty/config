@@ -1,0 +1,5 @@
+# Disable split keybindings (using tmux instead)
+keybind = ctrl+shift+o=unbind
+keybind = ctrl+shift+e=unbind
+keybind = cmd+d=unbind
+keybind = cmd+shift+d=unbind
