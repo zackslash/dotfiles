@@ -59,6 +59,8 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 alias whipper='PYTHONWARNINGS="ignore::UserWarning" whipper'
 
+alias vim="nvim"
+
 # Open directories in Cosmic Files (macOS-style 'open' command)
 open() {
   cosmic-files "${1:-.}" &>/dev/null &
