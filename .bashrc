@@ -45,7 +45,7 @@ for p in range(4097, 4201):
         pass
 ")
     export OPENCODE_PORT=$_win_port
-    tmux set-environment -w OPENCODE_PORT "$_win_port"
+    tmux set-environment -w OPENCODE_PORT "$_win_port" 2>/dev/null || tmux set-environment OPENCODE_PORT "$_win_port" 2>/dev/null
   fi
   unset _win_port
 fi
