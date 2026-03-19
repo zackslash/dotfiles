@@ -32,6 +32,7 @@ dotfiles push
 | [Go](https://go.dev/) (1.21+) | Go toolchain |
 | [delve](https://github.com/go-delve/delve) | Go debugger — `go install github.com/go-delve/delve/cmd/dlv@latest` |
 | [GitHub Copilot](https://github.com/features/copilot) | AI completions (subscription required) — run `:Copilot auth` after first Neovim launch |
+| [Ghostty](https://ghostty.org/) | Terminal emulator |
 | [yay](https://github.com/Jguer/yay) | AUR helper (Arch Linux) |
 | [flatpak](https://flatpak.org/) | Flatpak package manager |
 
@@ -135,6 +136,7 @@ Uses [LazyVim](https://www.lazyvim.org/) + [lazy.nvim](https://github.com/folke/
 | `~/.gitconfig` | Git config |
 | `~/.tmux.conf`, `~/.config/tmux/` | Tmux config |
 | `~/.config/nvim/` | Neovim (LazyVim) config |
+| `~/.config/ghostty/` | Ghostty terminal config |
 | `~/.config/opencode/` | opencode config and skills |
 | `~/.config/git/ignore` | Global gitignore |
 | `~/.config/htop/htoprc` | htop config |
