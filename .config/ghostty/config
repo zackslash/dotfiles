@@ -1,3 +1,7 @@
+# Background matching COSMIC Dark theme (opacity 83% = 0.83)
+background = 1b1b1b
+background-opacity = 0.83
+
 # Disable split keybindings (using tmux instead)
 keybind = ctrl+shift+o=unbind
 keybind = ctrl+shift+e=unbind
