@@ -1,3 +1,7 @@
+# Titlebar matching COSMIC Dark theme
+window-titlebar-background = 1b1b1b
+window-titlebar-foreground = c4c4c4
+
 # Background matching COSMIC Dark theme (opacity 83% = 0.83)
 background = 1b1b1b
 background-opacity = 0.83
