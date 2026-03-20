@@ -54,6 +54,7 @@ return {
       require("dap-go").setup({
         delve = {
           path = vim.fn.expand("~/go/bin/dlv"),
+          output_mode = "remote",
         },
         dap_configurations = {
           {
