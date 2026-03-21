@@ -3,13 +3,13 @@
   "presets": {
     "dynamic": {
       "oracle": {
-        "model": "github-copilot/gpt-5.3-codex",
+        "model": "github-copilot/claude-opus-4.6",
         "variant": "high",
         "skills": [],
         "mcps": []
       },
       "orchestrator": {
-        "model": "github-copilot/gpt-5.3-codex",
+        "model": "github-copilot/claude-sonnet-4.6",
         "skills": [
           "*"
         ],
@@ -18,13 +18,13 @@
         ]
       },
       "fixer": {
-        "model": "github-copilot/gpt-5.2-codex",
+        "model": "github-copilot/claude-sonnet-4.6",
         "variant": "low",
         "skills": [],
         "mcps": []
       },
       "designer": {
-        "model": "github-copilot/gpt-5.2-codex",
+        "model": "github-copilot/claude-sonnet-4.6",
         "variant": "medium",
         "skills": [
           "agent-browser"
@@ -32,7 +32,7 @@
         "mcps": []
       },
       "librarian": {
-        "model": "github-copilot/gpt-5.4-mini",
+        "model": "github-copilot/claude-haiku-4.5",
         "variant": "low",
         "skills": [],
         "mcps": [
@@ -42,7 +42,7 @@
         ]
       },
       "explorer": {
-        "model": "github-copilot/gpt-5.4-mini",
+        "model": "github-copilot/claude-haiku-4.5",
         "variant": "low",
         "skills": [],
         "mcps": []
