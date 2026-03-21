@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug package",
+      "type": "go",
+      "request": "launch",
+      "program": "${workspaceFolder}",
+      "console": "internalConsole",
+      "outputMode": "remote"
+    }
+  ]
+}

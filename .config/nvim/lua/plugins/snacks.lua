@@ -6,5 +6,12 @@ return {
         header = "",
       },
     },
+    picker = {
+      sources = {
+        explorer = {
+          hidden = true,
+        },
+      },
+    },
   },
 }

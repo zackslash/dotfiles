@@ -66,8 +66,8 @@ If **no** sensitive data is found, tell the user "✅ No sensitive data detected
 Ask the user:
 > "What commit message would you like to use? (leave blank for a default)"
 
-If the user provides a message, use it. If blank/empty, auto-generate a concise one based on the changed files, e.g.:
-> `chore: update <file1>, <file2>`
+If the user provides a message, use it. If blank/empty, auto-generate a concise one based on the changed files — no conventional commit prefixes (no `chore:`, `feat:`, `fix:`, etc.), e.g.:
+> `update <file1>, <file2>`
 
 ### Step 5: Stage and commit
 

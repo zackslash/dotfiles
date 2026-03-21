@@ -2,6 +2,21 @@
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
+-- Copy DAP launch.json template into current project
+vim.api.nvim_create_user_command("DapInitLaunch", function()
+  local dest_dir = vim.fn.getcwd() .. "/.vscode"
+  local dest = dest_dir .. "/launch.json"
+  local template = vim.fn.stdpath("config") .. "/templates/launch.json"
+  if vim.fn.filereadable(dest) == 1 then
+    vim.notify(".vscode/launch.json already exists", vim.log.levels.WARN)
+    return
+  end
+  vim.fn.mkdir(dest_dir, "p")
+  vim.fn.system({ "cp", template, dest })
+  vim.notify("Created .vscode/launch.json", vim.log.levels.INFO)
+  vim.cmd("edit " .. dest)
+end, {})
+
 if vim.g.vscode then
   local vscode = require("vscode")
 
