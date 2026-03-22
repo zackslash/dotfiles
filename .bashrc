@@ -57,6 +57,9 @@ opencode() {
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
+# Load secrets (not tracked in dotfiles)
+[ -f ~/.secrets ] && source ~/.secrets
+
 alias whipper='PYTHONWARNINGS="ignore::UserWarning" whipper'
 
 alias vi="nvim"
