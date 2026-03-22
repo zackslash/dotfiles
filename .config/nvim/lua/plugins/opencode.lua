@@ -32,6 +32,7 @@ return {
           -- Auto-connect to the opencode instance for this tmux window.
           -- OPENCODE_PORT is set per-window in ~/.bashrc so all panes share the same port.
           port = tonumber(vim.env.OPENCODE_PORT), -- nil falls back to auto-discovery if not in tmux
+          start = false, -- Never auto-launch opencode in a buffer; always use the tmux pane
         },
       }
 
