@@ -1,0 +1,6 @@
+[Unit]
+Description=Periodic notes git sync (safety net)
+
+[Service]
+Type=oneshot
+ExecStart=/home/luke/scripts/notes-sync

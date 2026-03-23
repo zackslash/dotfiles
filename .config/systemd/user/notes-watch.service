@@ -1,0 +1,18 @@
+[Unit]
+Description=Watch notes repo and sync on changes
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/bash -c 'while ! command -v inotifywait; do sleep 1; done'
+ExecStart=/usr/bin/bash -c '\
+  while inotifywait -r -e close_write,create,delete,move \
+    --exclude ".git" /home/luke/notes; do \
+    sleep 2; \
+    /home/luke/scripts/notes-sync; \
+  done'
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
