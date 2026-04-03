@@ -77,6 +77,30 @@
       ]
     }
   },
+  "council": {
+    "master": { "model": "github-copilot/claude-opus-4.6" },
+    "master_fallback": ["github-copilot/gpt-5.4", "github-copilot/gemini-2.5-pro"],
+    "default_preset": "default",
+    "presets": {
+      "default": {
+        "alpha": { "model": "github-copilot/gpt-5.4" },
+        "beta":  { "model": "github-copilot/gemini-2.5-pro" },
+        "gamma": { "model": "github-copilot/claude-sonnet-4.6" }
+      },
+      "quick": {
+        "alpha": { "model": "github-copilot/gpt-5-mini" },
+        "beta":  { "model": "github-copilot/claude-haiku-4.5" }
+      },
+      "heavy": {
+        "master": { "model": "github-copilot/claude-opus-4.6" },
+        "alpha":   { "model": "github-copilot/gpt-5.4" },
+        "beta":    { "model": "github-copilot/gemini-2.5-pro" },
+        "gamma":   { "model": "github-copilot/claude-sonnet-4.6" },
+        "delta":   { "model": "github-copilot/gpt-5.1-codex" },
+        "echo":    { "model": "github-copilot/grok-code-fast-1" }
+      }
+    }
+  },
   "tmux": {
     "enabled": true,
     "layout": "tiled",
