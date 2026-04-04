@@ -3,7 +3,7 @@
   "model": "github-copilot/claude-opus-4.6",
   "small_model": "github-copilot/gpt-5-mini",
   "plugin": [
-    "oh-my-opencode-slim@0.9.1",
+    "oh-my-opencode-slim@0.9.2",
     "@tarquinen/opencode-dcp@3.1.7"
   ],
   "agent": {
