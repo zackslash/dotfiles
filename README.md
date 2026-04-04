@@ -143,3 +143,10 @@ Uses [LazyVim](https://www.lazyvim.org/) + [lazy.nvim](https://github.com/folke/
 | `~/.config/autostart/` | Autostart desktop entries |
 | `~/.config/whipper/whipper.conf` | Whipper CD ripper config |
 | `~/scripts/` | Personal shell scripts |
+
+## Tips
+
+- Run `dotfiles status` to see pending changes across your home directory.
+- Use `dotfiles diff` before committing to review what changed.
+- To list all tracked files: `dotfiles ls-files`
+- On a fresh machine, set up the alias before running checkout: without it the `dotfiles` command won't be available.
