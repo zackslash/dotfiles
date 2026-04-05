@@ -1,0 +1,6 @@
+.secrets
+
+# Sunshine: keep only public-safe config files
+.config/sunshine/*
+!.config/sunshine/apps.json
+!.config/sunshine/sunshine.conf

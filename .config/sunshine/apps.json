@@ -1,0 +1,52 @@
+{
+  "apps": [
+    {
+      "auto-detach": true,
+      "cmd": [],
+      "detached": [
+        "setsid steam steam://open/bigpicture"
+      ],
+      "elevated": false,
+      "exclude-global-prep-cmd": false,
+      "exit-timeout": 5,
+      "image-path": "steam.png",
+      "name": "Steam",
+      "output": "",
+      "prep-cmd": [
+        {
+          "do": "/home/luke/scripts/wake"
+        },
+        {
+          "do": "/home/luke/dev/cosmic-virtual-screen-for-steam-deck/sunshine-start.sh deck-oled-2x",
+          "undo": "/home/luke/dev/cosmic-virtual-screen-for-steam-deck/sunshine-stop.sh"
+        },
+        {
+          "do": "",
+          "undo": "loginctl lock-session"
+        },
+        {
+          "do": "",
+          "undo": "setsid steam steam://close/bigpicture"
+        },
+        {
+          "do": "touch /tmp/sunshine-streaming",
+          "undo": "rm -f /tmp/sunshine-streaming"
+        }
+      ],
+      "wait-all": true
+    },
+    {
+      "prep-cmd": [
+        {
+          "do": "",
+          "undo": "loginctl lock-session"
+        }
+      ],
+      "image-path": "desktop.png",
+      "name": "Desktop"
+    }
+  ],
+  "env": {
+    "PATH": "$(PATH):$(HOME)/.local/bin"
+  }
+}
