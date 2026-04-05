@@ -29,11 +29,11 @@ New files must be added explicitly. Updates to already tracked files can be revi
 
 | Tool | Purpose |
 |------|---------|
-| [Neovim](https://neovim.io/) (v0.10+) | Editor |
+| [Neovim](https://neovim.io/) | Editor |
 | [tmux](https://github.com/tmux/tmux) | Terminal multiplexer (auto-started by `.bashrc`) |
 | [TPM](https://github.com/tmux-plugins/tpm) | Tmux plugin manager — `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`, then `prefix + I` to install plugins |
 | [opencode](https://opencode.ai/) | AI coding assistant (terminal) |
-| [Go](https://go.dev/) (1.21+) | Go toolchain |
+| [Go](https://go.dev/) | Go toolchain |
 | [delve](https://github.com/go-delve/delve) | Go debugger — `go install github.com/go-delve/delve/cmd/dlv@latest` |
 | [GitHub Copilot](https://github.com/features/copilot) | AI completions (subscription required) — run `:Copilot auth` after first Neovim launch |
 | [Ghostty](https://ghostty.org/) | Terminal emulator |
