@@ -63,11 +63,16 @@ If **no** sensitive data is found, tell the user "✅ No sensitive data detected
 
 ### Step 4: Ask for a commit message
 
-Ask the user:
-> "What commit message would you like to use? (leave blank for a default)"
-
-If the user provides a message, use it. If blank/empty, auto-generate a concise one based on the changed files — no conventional commit prefixes (no `chore:`, `feat:`, `fix:`, etc.), e.g.:
+Before asking, auto-generate a concise commit message based on the changed files — no conventional commit prefixes (no `chore:`, `feat:`, `fix:`, etc.), e.g.:
 > `update <file1>, <file2>`
+
+Then ask the user using the `question` tool. The auto-generated option must show the actual generated message in the option label rather than a generic label like "Use default". For example:
+- option label: `update opencode.json`
+- option description: `Use the auto-generated message`
+
+If the generated message is too long for the option label, use a shortened/truncated label that still shows the message and put the full generated message in the description.
+
+If the user provides a custom message, use it. If they choose the auto-generated option or leave the message blank/empty, use the auto-generated message.
 
 ### Step 5: Stage and commit
 
