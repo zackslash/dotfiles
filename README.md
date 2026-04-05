@@ -43,17 +43,3 @@ New files must be added explicitly. Updates to already tracked files can be revi
 ## Neovim
 
 Uses [LazyVim](https://www.lazyvim.org/) + [lazy.nvim](https://github.com/folke/lazy.nvim). Plugins install automatically on first launch.
-
-### Plugins
-
-| Plugin | Purpose |
-|--------|---------|
-| `Mofiqul/vscode.nvim` | VS Code dark theme |
-| `zbirenbaum/copilot.lua` | Inline AI completions |
-| `sindrets/diffview.nvim` | Side-by-side git diffs |
-| `lewis6991/gitsigns.nvim` | Inline git blame |
-| `MeanderingProgrammer/render-markdown.nvim` | Rendered markdown in buffer |
-| `mfussenegger/nvim-dap` + `rcarriga/nvim-dap-ui` | Debug adapter protocol |
-| `leoluz/nvim-dap-go` | Go debug via delve |
-| `nvim-neotest/neotest` + `fredrikaverpil/neotest-golang` | Go test runner |
-| `nickjvandyke/opencode.nvim` | opencode integration |
