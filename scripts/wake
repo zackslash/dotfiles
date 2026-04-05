@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+export YDOTOOL_SOCKET=/run/user/1000/.ydotool_socket
+ydotool key 29:1 29:0
