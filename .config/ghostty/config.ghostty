@@ -14,3 +14,6 @@ keybind = cmd+shift+d=unbind
 
 window-width = 215
 window-height = 50
+
+# Disable programming ligatures
+font-feature = -calt
