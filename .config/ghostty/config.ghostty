@@ -17,3 +17,5 @@ window-height = 50
 
 # Disable programming ligatures
 font-feature = -calt
+font-feature = -liga
+font-feature = -dlig
