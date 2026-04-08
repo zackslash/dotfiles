@@ -5,7 +5,7 @@
 			"oracle": {
 				"model": [
 					{
-						"id": "github-copilot/claude-opus-4.6",
+						"id": "github-copilot/gpt-5.4",
 						"variant": "high"
 					}
 				],
