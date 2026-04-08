@@ -6,3 +6,14 @@
 --
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+
+local json_no_autoformat = vim.api.nvim_create_augroup("json_no_autoformat", { clear = true })
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = json_no_autoformat,
+  pattern = { "json", "jsonc" },
+  desc = "Disable LazyVim autoformat for json/jsonc",
+  callback = function(event)
+    vim.b[event.buf].autoformat = false
+  end,
+})
