@@ -106,6 +106,8 @@
       "go build *": "allow",
       "go vet *": "allow",
       "go fmt *": "allow",
+      "gofmt": "allow",
+      "gofmt *": "allow",
       "go mod tidy": "ask",
       "go get *": "ask",
       "go run *": "ask",
