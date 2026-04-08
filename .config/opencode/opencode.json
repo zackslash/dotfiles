@@ -4,7 +4,7 @@
   "small_model": "github-copilot/gpt-5-mini",
   "plugin": [
     "oh-my-opencode-slim@0.9.5",
-    "@tarquinen/opencode-dcp@3.1.8"
+    "@tarquinen/opencode-dcp@3.1.9"
   ],
   "instructions": [
     "rules.md"
