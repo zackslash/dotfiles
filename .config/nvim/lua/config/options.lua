@@ -4,6 +4,8 @@
 
 vim.opt.relativenumber = false
 vim.opt.autoread = true
+vim.opt.wrap = false
+vim.opt.sidescroll = 10
 
 -- Remove "How-to disable mouse" from right-click popup menu
 vim.cmd([[aunmenu PopUp.How-to\ disable\ mouse]])
