@@ -64,6 +64,12 @@
 			}
 		}
 	},
+	"disabled_agents": [],
+	"agents": {
+		"observer": {
+			"model": "github-copilot/gpt-4o"
+		}
+	},
 	"balanceProviderUsage": false,
 	"fallback": {
 		"enabled": false
