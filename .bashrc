@@ -17,6 +17,10 @@ export PATH="$PATH:/home/luke/.lmstudio/bin"
 
 export PATH="$HOME/.local/bin:$PATH"
 
+if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
+  printf '\033]2;%s\007' "$(date '+%Y-%m-%d %H:%M:%S')"
+fi
+
 # Auto-start tmux on interactive shell
 if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
   exec tmux new-session
