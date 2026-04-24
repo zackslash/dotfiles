@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # list and optionally remove orphaned packages
 echo "Orphaned packages"
@@ -5,10 +6,9 @@ mapfile -t orphans < <(pacman -Qdtq)
 if [[ ${#orphans[@]} -eq 0 ]]; then
     echo "No orphaned packages."
 else
-    for pkg in "${orphans[@]}"; do
-        read -rp "Remove orphan '$pkg'? [Y/n] " ans
-        [[ "$ans" =~ ^[Nn]$ ]] || sudo pacman -Rns "$pkg"
-    done
+    printf '%s\n' "${orphans[@]}"
+    read -rp "Remove all orphaned packages? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo pacman -Rns -- "${orphans[@]}"
 fi
 
 
@@ -20,27 +20,47 @@ if echo "$cache_output" | grep -q "no candidate packages found"; then
     echo "No cached packages to remove."
 else
     read -rp "Remove old cached packages? [Y/n] " ans
-    [[ "$ans" =~ ^[Nn]$ ]] || paccache -rk2
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo paccache -rk2
 fi
 
 
-# list broken symlinks
+# clean leftover pacman download temp directories
+echo "Pacman temp download dirs"
+download_dirs=(/var/cache/pacman/pkg/download-*)
+if [[ -e /var/lib/pacman/db.lck ]]; then
+    echo "Pacman lock present; skipping temp download dir cleanup."
+elif [[ ${#download_dirs[@]} -eq 1 && ${download_dirs[0]} == '/var/cache/pacman/pkg/download-*' ]]; then
+    echo "No pacman temp download dirs found."
+else
+    printf '%s\n' "${download_dirs[@]}"
+    read -rp "Remove pacman temp download dirs? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo rm -rf -- "${download_dirs[@]}"
+fi
+
+
+# report broken symlinks in user home
 echo "Broken symlinks"
-mapfile -t broken_links < <(sudo find /usr /etc /home -xtype l -not -path "*/Steam/*" -not -path "*/.steampath" -not -path "/home/luke/.config/mozilla/*")
+mapfile -t broken_links < <(find /home -xtype l -not -path "*/Steam/*" -not -path "*/.steampath" -not -path "/home/luke/.config/mozilla/*")
 if [[ ${#broken_links[@]} -eq 0 ]]; then
     echo "No broken symlinks."
 else
     for link in "${broken_links[@]}"; do
         echo "$link"
     done
-    read -rp "Remove all broken symlinks? [Y/n] " ans
-    [[ "$ans" =~ ^[Nn]$ ]] || sudo rm "${broken_links[@]}"
 fi
 
-# clean journal logs older than 2 weeks
-echo "Journal logs"
-sudo journalctl --vacuum-time=2weeks
+# report pacnew/pacsave files
+echo "Pacnew/Pacsave files"
+mapfile -t pacnews < <(sudo find /etc -type f \( -name '*.pacnew' -o -name '*.pacsave' \))
+if [[ ${#pacnews[@]} -eq 0 ]]; then
+    echo "No pacnew or pacsave files."
+else
+    printf '%s\n' "${pacnews[@]}"
+fi
 
-# systemctl
-echo "failed services"
-systemctl --failed
+# show failed services only when present
+failed_services=$(systemctl --failed --no-legend --plain 2>/dev/null)
+if [[ -n "$failed_services" ]]; then
+    echo "Failed services"
+    systemctl --failed
+fi

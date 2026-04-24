@@ -3,7 +3,7 @@
   "model": "github-copilot/gpt-5.4",
   "small_model": "github-copilot/gpt-5-mini",
   "plugin": [
-    "oh-my-opencode-slim@1.0.1"
+    "oh-my-opencode-slim@1.0.3"
   ],
   "instructions": [
     "rules.md"

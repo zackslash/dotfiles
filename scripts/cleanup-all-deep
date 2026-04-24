@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# aggressive pacman cache cleanup
+echo "Pacman cache (deep)"
+cache_output=$(paccache -dvk1)
+echo "$cache_output"
+if echo "$cache_output" | grep -q "no candidate packages found"; then
+    echo "No cached packages to remove."
+else
+    read -rp "Remove old cached packages and keep only 1 version? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo paccache -rk1
+fi
+
+
+# remove uninstalled package cache
+echo "Uninstalled package cache"
+uninstalled_output=$(paccache -dvuk0)
+echo "$uninstalled_output"
+if echo "$uninstalled_output" | grep -q "no candidate packages found"; then
+    echo "No uninstalled package cache to remove."
+else
+    read -rp "Remove all uninstalled package cache files? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo paccache -ruk0
+fi
+
+
+# remove stale pacman temp download dirs
+echo "Pacman temp download dirs"
+download_dirs=(/var/cache/pacman/pkg/download-*)
+if [[ -e /var/lib/pacman/db.lck ]]; then
+    echo "Pacman lock present; skipping temp download dir cleanup."
+elif [[ ${#download_dirs[@]} -eq 1 && ${download_dirs[0]} == '/var/cache/pacman/pkg/download-*' ]]; then
+    echo "No pacman temp download dirs found."
+else
+    printf '%s\n' "${download_dirs[@]}"
+    read -rp "Remove pacman temp download dirs? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || sudo rm -rf -- "${download_dirs[@]}"
+fi
+
+
+# remove yay build cache directory
+echo "Yay build cache"
+yay_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/yay"
+if [[ ! -d "$yay_cache_dir" ]]; then
+    echo "No yay cache directory found."
+else
+    du -sh "$yay_cache_dir" 2>/dev/null || true
+    read -rp "Remove yay build cache directory? [Y/n] " ans
+    [[ "$ans" =~ ^[Nn]$ ]] || rm -rf -- "$yay_cache_dir"
+fi
+
+
+# vacuum journal logs
+echo "Journal logs"
+read -rp "Vacuum journal logs older than 2 weeks? [Y/n] " ans
+[[ "$ans" =~ ^[Nn]$ ]] || sudo journalctl --vacuum-time=2weeks
+
+
+# report pacnew/pacsave files
+echo "Pacnew/Pacsave files"
+mapfile -t pacnews < <(sudo find /etc -type f \( -name '*.pacnew' -o -name '*.pacsave' \))
+if [[ ${#pacnews[@]} -eq 0 ]]; then
+    echo "No pacnew or pacsave files."
+else
+    printf '%s\n' "${pacnews[@]}"
+fi
+
+
+# show failed services only when present
+failed_services=$(systemctl --failed --no-legend --plain 2>/dev/null)
+if [[ -n "$failed_services" ]]; then
+    echo "Failed services"
+    systemctl --failed
+fi
