@@ -3,7 +3,7 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "opencode-go/deepseek-v4-flash",
   "plugin": [
-    "oh-my-opencode-slim@1.0.4",
+    "oh-my-opencode-slim@1.0.6",
     "opencode-dcp@3.1.9"
   ],
   "instructions": [
