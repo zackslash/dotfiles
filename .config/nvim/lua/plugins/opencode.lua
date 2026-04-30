@@ -34,6 +34,9 @@ return {
           port = tonumber(vim.env.OPENCODE_PORT), -- nil falls back to auto-discovery if not in tmux
           start = false, -- Never auto-launch opencode in a buffer; always use the tmux pane
         },
+        events = {
+          permissions = { enabled = false }, -- handled in the TUI instead
+        },
       }
 
       -- Core keymaps
