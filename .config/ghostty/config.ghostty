@@ -8,37 +8,37 @@ background-blur-radius = 0
 
 # Disable split keybindings (using tmux instead)
 # -- Creation --
-keybind = ctrl+shift+o=ignore            # [linux]  new_split:right
-keybind = ctrl+shift+e=ignore            # [linux]  new_split:down
-keybind = cmd+d=ignore                   # [macos]  new_split:right
-keybind = cmd+shift+d=ignore             # [macos]  new_split:down
+keybind = ctrl+shift+o=unbind
+keybind = ctrl+shift+e=unbind
+keybind = cmd+d=unbind
+keybind = cmd+shift+d=unbind
 # -- Navigation --
-keybind = ctrl+alt+up=ignore             # [linux]  goto_split:up
-keybind = ctrl+alt+down=ignore           # [linux]  goto_split:down
-keybind = ctrl+alt+left=ignore           # [linux]  goto_split:left
-keybind = ctrl+alt+right=ignore          # [linux]  goto_split:right
-keybind = ctrl+super+[=ignore            # [linux]  goto_split:previous
-keybind = ctrl+super+]=ignore            # [linux]  goto_split:next
-keybind = cmd+alt+up=ignore              # [macos]  goto_split:up
-keybind = cmd+alt+down=ignore            # [macos]  goto_split:down
-keybind = cmd+alt+left=ignore            # [macos]  goto_split:left
-keybind = cmd+alt+right=ignore           # [macos]  goto_split:right
-keybind = cmd+[=ignore                   # [macos]  goto_split:previous
-keybind = cmd+]=ignore                   # [macos]  goto_split:next
+keybind = ctrl+alt+arrow_up=unbind
+keybind = ctrl+alt+arrow_down=unbind
+keybind = ctrl+alt+arrow_left=unbind
+keybind = ctrl+alt+arrow_right=unbind
+keybind = super+ctrl+[=unbind
+keybind = super+ctrl+]=unbind
+keybind = cmd+alt+up=unbind
+keybind = cmd+alt+down=unbind
+keybind = cmd+alt+left=unbind
+keybind = cmd+alt+right=unbind
+keybind = cmd+[=unbind
+keybind = cmd+]=unbind
 # -- Zoom --
-keybind = ctrl+shift+enter=ignore        # [linux]  toggle_split_zoom
-keybind = cmd+shift+enter=ignore         # [macos]  toggle_split_zoom
+keybind = ctrl+shift+enter=unbind
+keybind = cmd+shift+enter=unbind
 # -- Resize --
-keybind = super+ctrl+shift+up=ignore     # [linux]  resize_split:up
-keybind = super+ctrl+shift+down=ignore   # [linux]  resize_split:down
-keybind = super+ctrl+shift+left=ignore   # [linux]  resize_split:left
-keybind = super+ctrl+shift+right=ignore  # [linux]  resize_split:right
-keybind = cmd+ctrl+up=ignore             # [macos]  resize_split:up
-keybind = cmd+ctrl+down=ignore           # [macos]  resize_split:down
-keybind = cmd+ctrl+left=ignore           # [macos]  resize_split:left
-keybind = cmd+ctrl+right=ignore          # [macos]  resize_split:right
+keybind = super+ctrl+shift+arrow_up=unbind
+keybind = super+ctrl+shift+arrow_down=unbind
+keybind = super+ctrl+shift+arrow_left=unbind
+keybind = super+ctrl+shift+arrow_right=unbind
+keybind = cmd+ctrl+up=unbind
+keybind = cmd+ctrl+down=unbind
+keybind = cmd+ctrl+left=unbind
+keybind = cmd+ctrl+right=unbind
 # -- Equalize --
-keybind = cmd+ctrl+equal=ignore          # [macos]  equalize_splits
+keybind = cmd+ctrl+equal=unbind
 
 window-width = 215
 window-height = 50
