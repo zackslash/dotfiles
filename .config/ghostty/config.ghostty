@@ -7,10 +7,38 @@ background-opacity = 0.83
 background-blur-radius = 0
 
 # Disable split keybindings (using tmux instead)
-keybind = ctrl+shift+o=unbind
-keybind = ctrl+shift+e=unbind
-keybind = cmd+d=unbind
-keybind = cmd+shift+d=unbind
+# -- Creation --
+keybind = ctrl+shift+o=ignore            # [linux]  new_split:right
+keybind = ctrl+shift+e=ignore            # [linux]  new_split:down
+keybind = cmd+d=ignore                   # [macos]  new_split:right
+keybind = cmd+shift+d=ignore             # [macos]  new_split:down
+# -- Navigation --
+keybind = ctrl+alt+up=ignore             # [linux]  goto_split:up
+keybind = ctrl+alt+down=ignore           # [linux]  goto_split:down
+keybind = ctrl+alt+left=ignore           # [linux]  goto_split:left
+keybind = ctrl+alt+right=ignore          # [linux]  goto_split:right
+keybind = ctrl+super+[=ignore            # [linux]  goto_split:previous
+keybind = ctrl+super+]=ignore            # [linux]  goto_split:next
+keybind = cmd+alt+up=ignore              # [macos]  goto_split:up
+keybind = cmd+alt+down=ignore            # [macos]  goto_split:down
+keybind = cmd+alt+left=ignore            # [macos]  goto_split:left
+keybind = cmd+alt+right=ignore           # [macos]  goto_split:right
+keybind = cmd+[=ignore                   # [macos]  goto_split:previous
+keybind = cmd+]=ignore                   # [macos]  goto_split:next
+# -- Zoom --
+keybind = ctrl+shift+enter=ignore        # [linux]  toggle_split_zoom
+keybind = cmd+shift+enter=ignore         # [macos]  toggle_split_zoom
+# -- Resize --
+keybind = super+ctrl+shift+up=ignore     # [linux]  resize_split:up
+keybind = super+ctrl+shift+down=ignore   # [linux]  resize_split:down
+keybind = super+ctrl+shift+left=ignore   # [linux]  resize_split:left
+keybind = super+ctrl+shift+right=ignore  # [linux]  resize_split:right
+keybind = cmd+ctrl+up=ignore             # [macos]  resize_split:up
+keybind = cmd+ctrl+down=ignore           # [macos]  resize_split:down
+keybind = cmd+ctrl+left=ignore           # [macos]  resize_split:left
+keybind = cmd+ctrl+right=ignore          # [macos]  resize_split:right
+# -- Equalize --
+keybind = cmd+ctrl+equal=ignore          # [macos]  equalize_splits
 
 window-width = 215
 window-height = 50
