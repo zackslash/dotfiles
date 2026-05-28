@@ -45,7 +45,7 @@
 			"librarian": {
 				"model": [
 					{
-						"id": "xiaomi-token-plan-ams/deepseek-v4-flash",
+						"id": "xiaomi-token-plan-ams/mimo-v2-flash",
 						"variant": "low"
 					}
 				],

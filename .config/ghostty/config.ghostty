@@ -47,3 +47,6 @@ window-height = 50
 font-feature = -calt
 font-feature = -liga
 font-feature = -dlig
+
+# Pass ctrl+enter through to TUI apps (Kitty Keyboard Protocol format)
+keybind = ctrl+enter=csi:13;5u
