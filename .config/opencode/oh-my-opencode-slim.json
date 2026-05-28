@@ -5,11 +5,7 @@
 			"oracle": {
 				"model": [
 					{
-						"id": "opencode-go/deepseek-v4-pro",
-						"variant": "high"
-					},
-					{
-						"id": "openrouter/deepseek/deepseek-v4-pro",
+						"id": "xiaomi-token-plan-ams/mimo-v2.5-pro",
 						"variant": "high"
 					}
 				],
@@ -19,11 +15,7 @@
 			"orchestrator": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2.5-pro",
-						"variant": "medium"
-					},
-					{
-						"id": "openrouter/xiaomi/mimo-v2.5-pro",
+						"id": "xiaomi-token-plan-ams/mimo-v2.5-pro",
 						"variant": "medium"
 					}
 				],
@@ -33,11 +25,7 @@
 			"fixer": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2.5-pro",
-						"variant": "medium"
-					},
-					{
-						"id": "openrouter/xiaomi/mimo-v2.5-pro",
+						"id": "xiaomi-token-plan-ams/mimo-v2.5-pro",
 						"variant": "medium"
 					}
 				],
@@ -47,11 +35,7 @@
 			"designer": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2-omni",
-						"variant": "medium"
-					},
-					{
-						"id": "openrouter/xiaomi/mimo-v2-omni",
+						"id": "xiaomi-token-plan-ams/mimo-v2-omni",
 						"variant": "medium"
 					}
 				],
@@ -61,11 +45,7 @@
 			"librarian": {
 				"model": [
 					{
-						"id": "opencode-go/qwen3.6-plus",
-						"variant": "low"
-					},
-					{
-						"id": "openrouter/qwen/qwen3.6-plus",
+						"id": "xiaomi-token-plan-ams/deepseek-v4-flash",
 						"variant": "low"
 					}
 				],
@@ -75,11 +55,7 @@
 			"explorer": {
 				"model": [
 					{
-						"id": "opencode-go/deepseek-v4-flash",
-						"variant": "low"
-					},
-					{
-						"id": "openrouter/deepseek/deepseek-v4-flash",
+						"id": "xiaomi-token-plan-ams/mimo-v2-flash",
 						"variant": "low"
 					}
 				],
@@ -96,7 +72,7 @@
 	},
 	"balanceProviderUsage": false,
 	"fallback": {
-		"enabled": true
+		"enabled": false
 	},
 	"council": {
 		"master": {
