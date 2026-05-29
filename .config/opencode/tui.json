@@ -5,7 +5,7 @@
       {
         "updateCheck": false,
         "modeToast": false,
-        "startMode": "normal"
+        "startMode": "insert"
       }
     ]
   ]
