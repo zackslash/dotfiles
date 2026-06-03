@@ -45,7 +45,7 @@
 			"librarian": {
 				"model": [
 					{
-						"id": "xiaomi-token-plan-ams/mimo-v2-flash",
+						"id": "xiaomi-token-plan-ams/mimo-v2.5",
 						"variant": "low"
 					}
 				],
@@ -55,7 +55,7 @@
 			"explorer": {
 				"model": [
 					{
-						"id": "xiaomi-token-plan-ams/mimo-v2-flash",
+						"id": "xiaomi-token-plan-ams/mimo-v2.5",
 						"variant": "low"
 					}
 				],
