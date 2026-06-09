@@ -3,7 +3,7 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "xiaomi-token-plan-ams/mimo-v2-flash",
   "plugin": [
-    "oh-my-opencode-slim@1.1.1",
+    "oh-my-opencode-slim@1.1.2",
     "@tarquinen/opencode-dcp@3.1.12"
   ],
   "instructions": [
@@ -47,6 +47,7 @@
       "mv *": "ask",
       "rm *": "ask",
       "gh issue list *": "allow",
+      "gh issue view *": "allow",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
