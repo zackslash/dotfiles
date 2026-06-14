@@ -27,6 +27,7 @@
       "cat .env*": "deny",
       "cat *.pem": "deny",
       "cat *.key": "deny",
+      "ctest *": "allow",
       "head *": "allow",
       "head .env*": "deny",
       "tail *": "allow",
