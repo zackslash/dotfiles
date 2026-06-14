@@ -19,7 +19,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Update tmux pane title with pwd (tmux propagates to Ghostty via set-titles)
 if [[ "$TERM_PROGRAM" == "ghostty" ]] || [[ -n "$TMUX" ]]; then
-  PROMPT_COMMAND+='; printf "\033]2;%s\007" "$(pwd)"'
+  PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;} printf \"\033]2;%s\007\" \"\$(pwd)\""
 fi
 
 # Auto-start tmux on interactive shell
