@@ -17,8 +17,9 @@ export PATH="$PATH:/home/luke/.lmstudio/bin"
 
 export PATH="$HOME/.local/bin:$PATH"
 
-if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
-  printf '\033]2;%s\007' "$(date '+%Y-%m-%d %H:%M:%S')"
+# Update tmux pane title with pwd (tmux propagates to Ghostty via set-titles)
+if [[ "$TERM_PROGRAM" == "ghostty" ]] || [[ -n "$TMUX" ]]; then
+  PROMPT_COMMAND+='; printf "\033]2;%s\007" "$(pwd)"'
 fi
 
 # Auto-start tmux on interactive shell
