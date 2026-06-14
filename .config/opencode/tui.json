@@ -1,7 +1,7 @@
 {
   "plugin": [
     [
-      "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.13.0",
+      "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.14.0",
       {
         "updateCheck": false,
         "modeToast": false,
