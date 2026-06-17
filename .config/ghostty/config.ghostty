@@ -54,3 +54,6 @@ keybind = ctrl+enter=csi:13;5u
 # Cursor trail shader (https://github.com/zackslash/ghostty-cursor-trails)
 custom-shader = shaders/ghostty-cursor-trails/boo-cursor.glsl
 custom-shader-animation = always
+
+# Suppress OSC 52 clipboard read prompts
+clipboard-read = allow
