@@ -42,13 +42,13 @@
 				"skills": ["agent-browser"],
 				"mcps": []
 			},
-			"librarian": {
-				"model": [
-					{
-						"id": "xiaomi-token-plan-ams/mimo-v2.5",
-						"variant": "low"
-					}
-				],
+		"librarian": {
+			"model": [
+				{
+					"id": "xiaomi-token-plan-ams/mimo-v2.5",
+					"variant": "medium"
+				}
+			],
 				"skills": [],
 				"mcps": ["websearch", "context7", "grep_app"]
 			},
