@@ -1,0 +1,17 @@
+#!/bin/bash
+# Restore tmux-resurrect once per system boot
+
+# Get boot ID (Linux) or boot time hash (macOS)
+if [ -f /proc/sys/kernel/random/boot_id ]; then
+    boot_id=$(cat /proc/sys/kernel/random/boot_id)
+else
+    boot_id=$(sysctl -n kern.boottime | md5sum | cut -d' ' -f1)
+fi
+
+sentinel="$HOME/.tmux/resurrect/.restored-$boot_id"
+
+# Only restore on first session of first tmux start after boot
+if [ "$(tmux list-sessions | wc -l)" -eq 1 ] && [ ! -f "$sentinel" ]; then
+    ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh quiet
+    touch "$sentinel"
+fi
