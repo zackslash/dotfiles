@@ -38,6 +38,26 @@ else
 fi
 
 
+# clean old tmux-resurrect saves (keep latest 5)
+echo "Tmux resurrect saves"
+resurrect_dir="$HOME/.tmux/resurrect"
+if [[ -d "$resurrect_dir" ]]; then
+    mapfile -t saves < <(ls -t "$resurrect_dir"/tmux_resurrect_*.txt 2>/dev/null)
+    if [[ ${#saves[@]} -le 5 ]]; then
+        echo "Only ${#saves[@]} saves found, nothing to remove."
+    else
+        echo "Keeping latest 5 of ${#saves[@]} saves:"
+        printf '%s\n' "${saves[@]:0:5}"
+        echo "Removing:"
+        printf '%s\n' "${saves[@]:5}"
+        read -rp "Remove old saves? [Y/n] " ans
+        [[ "$ans" =~ ^[Nn]$ ]] || rm -- "${saves[@]:5}"
+    fi
+else
+    echo "No resurrect directory found."
+fi
+
+
 # report broken symlinks in user home
 echo "Broken symlinks"
 mapfile -t broken_links < <(find /home -xtype l -not -path "*/Steam/*" -not -path "*/.steampath" -not -path "/home/luke/.config/mozilla/*")
