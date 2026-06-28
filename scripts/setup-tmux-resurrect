@@ -1,0 +1,106 @@
+#!/bin/bash
+set -e
+
+RESURRECT_DIR="$HOME/.tmux/plugins/tmux-resurrect"
+SAVE_SCRIPT="$RESURRECT_DIR/scripts/save.sh"
+
+# Install tmux-resurrect if missing
+if [ ! -d "$RESURRECT_DIR" ]; then
+    echo "Installing tmux-resurrect..."
+    git clone https://github.com/tmux-plugins/tmux-resurrect "$RESURRECT_DIR"
+fi
+
+# Verify save script exists
+if [ ! -x "$SAVE_SCRIPT" ]; then
+    echo "Error: save script not found or not executable at $SAVE_SCRIPT"
+    exit 1
+fi
+
+# Create resurrect dir if needed
+mkdir -p "$HOME/.tmux/resurrect"
+
+setup_linux() {
+    local systemd_dir="$HOME/.config/systemd/user"
+
+    mkdir -p "$systemd_dir"
+    cat > "$systemd_dir/tmux-resurrect-save.service" <<EOF
+[Unit]
+Description=Save tmux-resurrect state
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/pgrep tmux
+ExecCondition=/usr/bin/tmux list-panes -a
+ExecStart=$SAVE_SCRIPT quiet
+EOF
+
+    cat > "$systemd_dir/tmux-resurrect-save.timer" <<EOF
+[Unit]
+Description=Save tmux-resurrect every 5 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+    systemctl --user daemon-reload
+    systemctl --user enable --now tmux-resurrect-save.timer
+
+    echo "Done (systemd timer):"
+    systemctl --user status tmux-resurrect-save.timer --no-pager
+}
+
+setup_macos() {
+    local plist="$HOME/Library/LaunchAgents/com.tmux.resurrect-save.plist"
+    local log_dir="$HOME/Library/Logs/tmux-resurrect"
+    mkdir -p "$log_dir"
+
+    cat > "$plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.tmux.resurrect-save</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>pgrep -q tmux &amp;&amp; tmux list-panes -a -q &amp;&amp; $SAVE_SCRIPT quiet</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/dev/null</string>
+    <key>StandardErrorPath</key>
+    <string>$log_dir/stderr.log</string>
+</dict>
+</plist>
+EOF
+
+    launchctl unload "$plist" 2>/dev/null || true
+    launchctl load "$plist"
+
+    echo "Done (launchd):"
+    launchctl list | grep tmux-resurrect || echo "Loaded"
+}
+
+case "$(uname -s)" in
+    Linux)  setup_linux ;;
+    Darwin) setup_macos ;;
+    *)      echo "Unsupported OS: $(uname -s)"; exit 1 ;;
+esac
+
+echo ""
+echo "Test with: $SAVE_SCRIPT"
