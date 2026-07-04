@@ -36,7 +36,7 @@
 			"designer": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2-pro",
+						"id": "opencode-go/mimo-v2.5-pro",
 						"variant": "medium"
 					},
 					"zai-coding-plan/glm-5.2"
@@ -79,9 +79,8 @@
 		"enabled": true
 	},
 	"council": {
-		"master": {
-			"model": "opencode-go/qwen3.7-max"
-		},
+		"timeout": 420000,
+		"councillor_execution_mode": "parallel",
 		"default_preset": "default",
 		"presets": {
 			"default": {
