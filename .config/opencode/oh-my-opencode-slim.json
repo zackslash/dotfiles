@@ -19,8 +19,8 @@
 						"variant": "medium"
 					}
 				],
-				"skills": ["*"],
-				"mcps": ["websearch"]
+          "skills": ["*"],
+          "mcps": ["websearch"]
 			},
 			"fixer": {
 				"model": [
@@ -71,7 +71,7 @@
 	"disabled_agents": [],
 	"agents": {
 		"observer": {
-			"model": ["opencode-go/mimo-v2-omni", "zai-coding-plan/glm-5v-turbo"]
+			"model": ["opencode-go/mimo-v2.5", "zai-coding-plan/glm-5v-turbo"]
 		}
 	},
 	"balanceProviderUsage": false,
