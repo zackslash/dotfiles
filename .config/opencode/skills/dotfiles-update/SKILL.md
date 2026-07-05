@@ -18,12 +18,19 @@ git --git-dir="$HOME/.dotfiles" --work-tree="$HOME"
 
 ### Step 1: Check for staged/unstaged changes
 
-Run:
+Run a human-readable status:
 ```bash
 git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" status
 ```
 
 If there is **nothing to commit**, tell the user and stop.
+
+**Snapshot the exact file list.** This is critical to prevent unrelated changes that appear later (e.g. editor lockfiles, auto-synced plugin versions) from being swept into the commit. Capture the set of tracked-modified files **now** by running:
+```bash
+git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" status --porcelain
+```
+
+Record every path that appears. This snapshot — call it the **staging set** — is the *only* set of files that may be committed in Step 5. Carry it forward through the rest of the workflow.
 
 ### Step 2: Show the full diff
 
@@ -76,12 +83,21 @@ If the user provides a custom message, use it. If they choose the auto-generated
 
 ### Step 5: Stage and commit
 
-Stage all changes that appear in `git status` (tracked files only — do NOT use `git add -u` on untracked files unless the user explicitly wants them):
+**Stage only the files in the staging set captured in Step 1 — never blanket-stage.**
+
+Do NOT use `git add -u`, `git add -A`, or `git add .`. These sweep in whatever is modified at commit time, which can include files that changed *after* the user reviewed the diff in Step 2 (e.g. `lazy-lock.json` plugin bumps, editor/session files, background tooling output). Instead, stage each path explicitly:
 ```bash
-git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" add -u
+git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" add -- <path1> <path2> ...
 ```
 
-Then commit:
+**Drift guard (mandatory).** Right before staging, re-run `git status --porcelain` and compare against the staging set. If any **new** modified tracked file appears that was not in the original snapshot:
+1. Stop and list the unexpected file(s) with a clear warning: **"⚠️ Files changed after review: <paths>. They were not part of the reviewed diff."**
+2. Ask the user via the `question` tool whether to:
+   - **"Exclude them — commit only the reviewed files"** → stage only the original staging set (default).
+   - **"Include them too"** → re-run Step 2's diff for the new files, run Step 3's secret scan on them, then stage everything.
+   - **"Abort"** → stop, commit nothing.
+
+Only after resolving drift, commit:
 ```bash
 git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" commit -m "<message>"
 ```
@@ -113,5 +129,5 @@ Options:
 ## Security Notes
 
 - Never auto-commit if sensitive data is detected without explicit user confirmation.
-- Never run `git add .` — only stage tracked files with `git add -u` to avoid accidentally staging untracked secrets.
+- Never run `git add .`, `git add -A`, or `git add -u`. Always stage files by explicit path from the Step 1 staging set to avoid sweeping in unreviewed changes (and untracked secrets).
 - The scan in Step 3 is a best-effort heuristic; always remind the user that **they are responsible for reviewing the diff**.
