@@ -4,7 +4,7 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "opencode/big-pickle",
   "plugin": [
-    "oh-my-opencode-slim@2.2.2",
+    "oh-my-opencode-slim@2.2.4",
     "@tarquinen/opencode-dcp@3.1.13"
   ],
   "instructions": [
