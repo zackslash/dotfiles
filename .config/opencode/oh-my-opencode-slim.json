@@ -74,7 +74,6 @@
 			"model": ["opencode-go/mimo-v2.5", "zai-coding-plan/glm-5v-turbo"]
 		}
 	},
-	"balanceProviderUsage": false,
 	"fallback": {
 		"enabled": true
 	},
@@ -94,41 +93,35 @@
 					"model": "opencode-go/kimi-k2.6"
 				}
 			},
-			"quick": {
-				"master": {
-					"model": "opencode-go/qwen3.7-plus"
-				},
-				"alpha": {
-					"model": "opencode-go/mimo-v2.5"
-				},
-				"beta": {
-					"model": "opencode-go/deepseek-v4-flash"
-				}
+		"quick": {
+			"alpha": {
+				"model": "opencode-go/mimo-v2.5"
 			},
-			"heavy": {
-				"master": {
-					"model": "opencode-go/qwen3.7-max"
-				},
-				"alpha": {
-					"model": "opencode-go/deepseek-v4-pro"
-				},
-				"beta": {
-					"model": "opencode-go/kimi-k2.7-code"
-				},
-				"gamma": {
-					"model": "opencode-go/minimax-m3"
-				},
-				"delta": {
-					"model": "opencode-go/mimo-v2.5-pro"
-				},
-				"echo": {
-					"model": "opencode-go/qwen3.7-plus"
-				}
+			"beta": {
+				"model": "opencode-go/deepseek-v4-flash"
+			}
+		},
+		"heavy": {
+			"alpha": {
+				"model": "opencode-go/deepseek-v4-pro"
+			},
+			"beta": {
+				"model": "opencode-go/kimi-k2.7-code"
+			},
+			"gamma": {
+				"model": "opencode-go/minimax-m3"
+			},
+			"delta": {
+				"model": "opencode-go/mimo-v2.5-pro"
+			},
+			"echo": {
+				"model": "opencode-go/qwen3.7-plus"
 			}
 		}
+		}
 	},
-	"tmux": {
-		"enabled": true,
+	"multiplexer": {
+		"type": "tmux",
 		"layout": "tiled",
 		"main_pane_size": 50
 	}
