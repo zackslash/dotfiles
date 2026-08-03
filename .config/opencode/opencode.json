@@ -5,7 +5,7 @@
   "small_model": "opencode/big-pickle",
   "plugin": [
     "oh-my-opencode-slim@2.2.8",
-    "@tarquinen/opencode-dcp@3.1.13"
+    "@tarquinen/opencode-dcp@3.1.14"
   ],
   "instructions": [
     "rules.md"
