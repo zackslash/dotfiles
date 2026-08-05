@@ -58,7 +58,7 @@
 			"explorer": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2.5",
+						"id": "opencode-go/deepseek-v4-flash",
 						"variant": "low"
 					},
 					"zai-coding-plan/glm-4.7"

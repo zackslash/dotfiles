@@ -5,7 +5,7 @@
   "small_model": "opencode/big-pickle",
   "plugin": [
     "oh-my-opencode-slim@2.2.8",
-    "@tarquinen/opencode-dcp@3.1.14"
+    "@cortexkit/opencode-magic-context@latest"
   ],
   "instructions": [
     "rules.md"
@@ -273,5 +273,9 @@
       "sudo *": "deny",
       "rtk sudo *": "deny"
     }
+  },
+  "compaction": {
+    "auto": false,
+    "prune": false
   }
 }
