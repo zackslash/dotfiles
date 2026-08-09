@@ -2,16 +2,16 @@
 	"preset": "dynamic",
 	"presets": {
 		"dynamic": {
-			"oracle": {
-				"model": [
-					{
-						"id": "zai-coding-plan/glm-5.2",
-						"variant": "max"
-					}
-				],
-				"skills": [],
-				"mcps": []
-			},
+		"oracle": {
+			"model": [
+				{
+					"id": "zai-coding-plan/glm-5.2",
+					"variant": "max"
+				}
+			],
+			"skills": [],
+			"mcps": []
+		},
 			"orchestrator": {
 				"model": [
 					{
@@ -22,14 +22,14 @@
           "skills": ["*"],
           "mcps": ["websearch"]
 			},
-			"fixer": {
-				"model": [
-					{
-						"id": "opencode-go/mimo-v2.5",
-						"variant": "medium"
-					},
-					"zai-coding-plan/glm-4.7"
-				],
+		"fixer": {
+			"model": [
+				{
+					"id": "opencode-go/deepseek-v4-flash",
+					"variant": "medium"
+				},
+				"zai-coding-plan/glm-4.7"
+			],
 				"skills": [],
 				"mcps": []
 			},
