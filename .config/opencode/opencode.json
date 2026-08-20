@@ -4,8 +4,8 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "opencode/big-pickle",
   "plugin": [
-    "oh-my-opencode-slim@2.2.10",
-    "@cortexkit/opencode-magic-context@0.34.0"
+    "oh-my-opencode-slim@2.2.15",
+    "@cortexkit/opencode-magic-context@0.38.0",
   ],
   "instructions": [
     "rules.md"
