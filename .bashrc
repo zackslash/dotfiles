@@ -14,6 +14,7 @@ export PATH=$PATH:~/go/bin
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/home/luke/.lmstudio/bin"
 # End of LM Studio CLI section
+#
 
 export PATH="$HOME/.local/bin:$PATH"
 
