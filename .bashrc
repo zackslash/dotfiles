@@ -56,9 +56,19 @@ for p in range(4097, 4201):
   unset _win_port
 fi
 
+# Fast TUI startup: skip blocking terminal palette query (~4.5s) and loading screen
+export OTUI_PALETTE_IDLE_TIMEOUT_MS=1
+export OPENCODE_FAST_BOOT=1
+
 opencode() {
   local port="${OPENCODE_PORT:-4097}"
-  command opencode --port "$port" "$@"
+  local url="http://127.0.0.1:${port}"
+  # Attach to this window's running server if it's up; otherwise boot one
+  if curl -fsS -o /dev/null --max-time 1 "$url/config" 2>/dev/null; then
+    command opencode attach "$url" "$@"
+  else
+    command opencode --port "$port" "$@"
+  fi
 }
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
