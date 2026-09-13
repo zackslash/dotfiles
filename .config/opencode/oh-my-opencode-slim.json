@@ -47,7 +47,7 @@
 			"librarian": {
 				"model": [
 					{
-						"id": "opencode-go/mimo-v2.5-pro",
+						"id": "opencode-go/deepseek-v4.1-flash",
 						"variant": "medium"
 					},
 					"zai-coding-plan/glm-4.7"
@@ -58,7 +58,7 @@
 			"explorer": {
 				"model": [
 					{
-						"id": "opencode-go/deepseek-v4-flash",
+						"id": "opencode-go/deepseek-v4.1-flash",
 						"variant": "low"
 					},
 					"zai-coding-plan/glm-4.7"
@@ -98,7 +98,7 @@
 				"model": "opencode-go/mimo-v2.5"
 			},
 			"beta": {
-				"model": "opencode-go/deepseek-v4-flash"
+				"model": "opencode-go/deepseek-v4.1-flash"
 			}
 		},
 		"heavy": {
