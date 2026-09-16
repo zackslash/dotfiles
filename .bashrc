@@ -28,48 +28,11 @@ if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
   exec tmux new-session
 fi
 
-# Port for opencode tmux support - one shared port per tmux window
-# All panes within the same window share the same OPENCODE_PORT
-if [ -n "$TMUX" ]; then
-  # Check if this window already has a port assigned (stored in tmux window env)
-  _win_port=$(tmux show-environment -w OPENCODE_PORT 2>/dev/null | grep '^OPENCODE_PORT=' | cut -d= -f2)
-  if [ -n "$_win_port" ]; then
-    # Reuse the port already assigned to this window
-    export OPENCODE_PORT=$_win_port
-  else
-    # Assign a new free port to this window and store it in the tmux window environment
-    _win_port=$(python3 -c "
-import socket
-for p in range(4097, 4201):
-    try:
-        s = socket.socket()
-        s.bind(('', p))
-        s.close()
-        print(p)
-        break
-    except OSError:
-        pass
-")
-    export OPENCODE_PORT=$_win_port
-    tmux set-environment -w OPENCODE_PORT "$_win_port" 2>/dev/null || tmux set-environment OPENCODE_PORT "$_win_port" 2>/dev/null
-  fi
-  unset _win_port
-fi
-
-# Fast TUI startup: skip blocking terminal palette query (~4.5s) and loading screen
+# Fast TUI startup (still honored by opencode v2): skip palette query and loading screen
 export OTUI_PALETTE_IDLE_TIMEOUT_MS=1
 export OPENCODE_FAST_BOOT=1
-
-opencode() {
-  local port="${OPENCODE_PORT:-4097}"
-  local url="http://127.0.0.1:${port}"
-  # Attach to this window's running server if it's up; otherwise boot one
-  if curl -fsS -o /dev/null --max-time 1 "$url/config" 2>/dev/null; then
-    command opencode attach "$url" "$@"
-  else
-    command opencode --port "$port" "$@"
-  fi
-}
+# opencode v2: no wrapper needed - every client attaches to the shared
+# background service automatically (tmux panes/windows all share it).
 
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 

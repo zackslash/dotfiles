@@ -5,7 +5,7 @@
   "small_model": "opencode/big-pickle",
   "plugin": [
     "oh-my-opencode-slim@2.2.19",
-    "@cortexkit/opencode-magic-context@0.42.0",
+    "@cortexkit/opencode-magic-context@0.42.2",
   ],
   "instructions": [
     "rules.md"
@@ -163,7 +163,6 @@
     }
   },
   "compaction": {
-    "auto": false,
-    "prune": false
+    "auto": true
   }
 }
