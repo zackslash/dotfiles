@@ -4,8 +4,8 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "opencode/big-pickle",
   "plugin": [
-    "oh-my-opencode-slim@2.2.19",
-    "@cortexkit/opencode-magic-context@0.42.2",
+    "oh-my-opencode-slim@2.2.21",
+    "@cortexkit/opencode-magic-context@latest",
   ],
   "instructions": [
     "rules.md"
@@ -159,10 +159,11 @@
       "sh *": "deny",
       "bash *": "deny",
       "eval *": "deny",
-      "sudo *": "deny",
+      "sudo *": "deny"
     }
   },
   "compaction": {
-    "auto": true
+    "auto": false,
+    "prune": false
   }
 }

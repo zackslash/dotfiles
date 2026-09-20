@@ -16,7 +16,7 @@
 				"model": [
 					{
 						"id": "zai-coding-plan/glm-5.3",
-						"variant": "high"
+						"variant": "low"
 					}
 				],
           "skills": ["*"],
@@ -26,7 +26,7 @@
 			"model": [
 				{
 					"id": "zai-coding-plan/glm-5.3-flash",
-					"variant": "high"
+					"variant": "low"
 				},
 				"zai-coding-plan/glm-4.7"
 			],
@@ -37,7 +37,7 @@
 				"model": [
 					{
 						"id": "zai-coding-plan/glm-5.3-flash",
-						"variant": "high"
+						"variant": "low"
 					},
 					"zai-coding-plan/glm-5.3"
 				],
@@ -48,7 +48,7 @@
 				"model": [
 					{
 						"id": "opencode-go/deepseek-v4.1-flash",
-						"variant": "high"
+						"variant": "low"
 					},
 					"zai-coding-plan/glm-4.7"
 				],

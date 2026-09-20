@@ -1,13 +1,3 @@
 {
-  "plugin": [
-    [
-      "vimcode@git+https://github.com/oribarilan/vimcode.git#v0.18.1",
-      {
-        "updateCheck": false,
-        "modeToast": false,
-        "startMode": "insert"
-      }
-    ],
-    "@cortexkit/opencode-magic-context@0.38.0"
-  ]
+  "plugin": []
 }
