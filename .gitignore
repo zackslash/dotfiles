@@ -4,3 +4,4 @@
 .config/sunshine/*
 !.config/sunshine/apps.json
 !.config/sunshine/sunshine.conf
+.cortexkit/magic-context/
