@@ -36,6 +36,37 @@
       "wait-all": true
     },
     {
+      "auto-detach": true,
+      "cmd": [],
+      "detached": [
+        "setsid steam steam://open/bigpicture"
+      ],
+      "elevated": false,
+      "exclude-global-prep-cmd": false,
+      "exit-timeout": 5,
+      "image-path": "steam.png",
+      "name": "Steam TV",
+      "output": "",
+      "prep-cmd": [
+        {
+          "do": "/home/luke/scripts/wake"
+        },
+        {
+          "do": "",
+          "undo": "loginctl lock-session"
+        },
+        {
+          "do": "",
+          "undo": "setsid steam steam://close/bigpicture"
+        },
+        {
+          "do": "touch /tmp/sunshine-streaming",
+          "undo": "rm -f /tmp/sunshine-streaming"
+        }
+      ],
+      "wait-all": true
+    },
+    {
       "prep-cmd": [
         {
           "do": "",

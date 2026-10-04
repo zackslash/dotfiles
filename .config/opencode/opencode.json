@@ -4,12 +4,28 @@
   "model": "opencode-go/mimo-v2.5-pro",
   "small_model": "opencode/big-pickle",
   "plugin": [
-    "oh-my-opencode-slim@2.2.25",
+    "oh-my-opencode-slim@3.0.0",
     "@cortexkit/opencode-magic-context@latest",
   ],
   "instructions": [
     "rules.md"
   ],
+  "mcp": {
+    "unifi": {
+      "type": "local",
+      "command": [
+        "/home/luke/.local/bin/uvx",
+        "unifi-network-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {
+        "UNIFI_HOST": "192.168.188.1",
+        "UNIFI_USERNAME": "mcp-readonly",
+        "UNIFI_PASSWORD": "{env:UNIFI_PASSWORD}",
+        "UNIFI_TOOL_REGISTRATION_MODE": "lazy"
+      }
+    }
+  },
   "permission": {
     "lsp": "allow",
     "read": "allow",

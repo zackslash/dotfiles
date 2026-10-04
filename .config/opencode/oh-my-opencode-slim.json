@@ -20,7 +20,7 @@
 					}
 				],
           "skills": ["*"],
-          "mcps": ["websearch"]
+          "mcps": ["websearch", "unifi", "nextdns", "dockhand"]
 			},
 		"fixer": {
 			"model": [
