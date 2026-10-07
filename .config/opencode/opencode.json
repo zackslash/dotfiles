@@ -7,9 +7,6 @@
     "oh-my-opencode-slim@3.0.0",
     "@cortexkit/opencode-magic-context@latest",
   ],
-  "instructions": [
-    "rules.md"
-  ],
   "mcp": {
     "unifi": {
       "type": "local",

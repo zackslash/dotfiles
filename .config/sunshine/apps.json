@@ -52,6 +52,10 @@
           "do": "/home/luke/scripts/wake"
         },
         {
+          "do": "/home/luke/dev/cosmic-virtual-screen-for-steam-deck/sunshine-start.sh tv-4k",
+          "undo": "/home/luke/dev/cosmic-virtual-screen-for-steam-deck/sunshine-stop.sh"
+        },
+        {
           "do": "",
           "undo": "loginctl lock-session"
         },
