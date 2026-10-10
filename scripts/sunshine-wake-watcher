@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# sunshine-wake-watcher — wake the display the moment a Moonlight client
+# connects to Sunshine, so the launch-time encoder probe sees a monitor.
+#
+# Why this exists: Sunshine validates capture/encoders BEFORE running app
+# prep-cmds. With the screen asleep the KMS monitor list is empty and the
+# launch dies with "Couldn't find monitor [0]" / "Fatal: Unable to find
+# display or encoder" — a prep-cmd wake never gets to run (verified in
+# sunshine.log.3, 2026-10-06 22:31). Moonlight talks to Sunshine's HTTPS
+# API on 47990 (/serverinfo before every launch), and the launch
+# connection stays open for the whole encoder sweep, so this poll always
+# catches it in time for the retry even in the worst case.
+#
+# Guards:
+#   - fires on the rising edge only (idle -> connected), never while a
+#     connection is already up
+#   - never wakes while /tmp/sunshine-streaming exists (live session —
+#     no stray Ctrl taps mid-game)
+#   - 10s cooldown between wakes
+# Every wake is printed to stdout and lands in the journal.
+
+set -u
+
+PORT=47990
+WAKE="$HOME/scripts/wake"
+COOLDOWN=10
+STREAM_MARKER=/tmp/sunshine-streaming
+
+prev_up=0
+last_wake=0
+
+while :; do
+    # Any socket on Sunshine's API port except LISTEN and loopback peers.
+    # Includes established + syn-recv + close/fin-wait so short-lived
+    # requests aren't missed (time-wait excluded so retries re-edge).
+    # Columns: State Recv-Q Send-Q Local Peer -> peer is $5.
+    peers=$(ss -tHn "( sport = :$PORT )" 2>/dev/null \
+        | awk '$1 != "LISTEN" {print $5}' \
+        | grep -vE '^(127\.|\[::1\])' \
+        | sort -u)
+
+    up=0
+    [ -n "$peers" ] && up=1
+
+    if [ "$up" = 1 ] && [ "$prev_up" = 0 ]; then
+        now=$(date +%s)
+        if (( now - last_wake >= COOLDOWN )) && [ ! -e "$STREAM_MARKER" ]; then
+            echo "$(date '+%F %T') moonlight client connected ($peers) - waking display"
+            if ! "$WAKE" >/dev/null 2>&1; then
+                echo "$(date '+%F %T') WARNING: $WAKE exited non-zero"
+            fi
+            last_wake=$now
+        fi
+    fi
+
+    prev_up=$up
+    sleep 0.3
+done
