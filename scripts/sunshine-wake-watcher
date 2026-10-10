@@ -11,16 +11,23 @@
 # connection stays open for the whole encoder sweep, so this poll always
 # catches it in time for the retry even in the worst case.
 #
+# Two modes:
+#   - displays on:  cheap sysfs check every 2s, no connection polling —
+#     a connection with the screen on never needs a wake
+#   - all displays asleep: fast connection poll (0.5s) on port 47990
+#
 # Guards:
-#   - fires on the rising edge only (idle -> connected), never while a
-#     connection is already up
+#   - fires only on NEW peer connections (per address:port tuple, so
+#     retries always re-edge even while old sockets linger in
+#     TIME-WAIT); an already-open connection when the screen blanks
+#     counts as new
 #   - never wakes while /tmp/sunshine-streaming exists (live session —
 #     no stray Ctrl taps mid-game)
 #   - only taps when every connected display is actually asleep
 #     (drm connector dpms=Off) — no input is injected while someone
 #     is using the machine
 #   - 10s cooldown between wakes
-# Every wake is printed to stdout and lands in the journal.
+# Every wake and mode change is printed to stdout and lands in the journal.
 
 set -u
 
@@ -29,54 +36,74 @@ WAKE="$HOME/scripts/wake"
 COOLDOWN=10
 STREAM_MARKER=/tmp/sunshine-streaming
 
+log() { echo "$(date '+%F %T') $*"; }
+
+# Hard dependencies: fail loudly (systemd will retry) if missing.
+command -v ss >/dev/null || { log "FATAL: ss (iproute2) not found"; exit 1; }
+[ -x "$WAKE" ] || { log "FATAL: $WAKE missing or not executable"; exit 1; }
+
 # True when no connected DRM connector is powered on, i.e. every physical
 # display is blanked/off. A blanked COSMIC output loses its CRTC (which is
 # why Sunshine's probe fails), and a connector without an active CRTC reads
 # dpms=Off in sysfs. Unreadable sysfs fails open (treat as asleep) so the
 # wake keeps working even if this check ever breaks.
 screen_asleep() {
-    local c
+    local c v
     for c in /sys/class/drm/card*-*/; do
         [ -r "$c/status" ] && [ -r "$c/dpms" ] || continue
-        [ "$(cat "$c/status")" = connected ] || continue
-        if [ "$(cat "$c/dpms")" = On ]; then
+        IFS= read -r v < "$c/status" 2>/dev/null || continue
+        [ "$v" = connected ] || continue
+        IFS= read -r v < "$c/dpms" 2>/dev/null || continue
+        if [ "$v" = On ]; then
             return 1
         fi
     done
     return 0
 }
 
-prev_up=0
+# Active watch mode: poll for Moonlight connections while every display
+# is asleep. Exits as soon as a display powers on (e.g. after our wake).
+watch_connections() {
+    local peers new now prev=""
+    if [ -e "$STREAM_MARKER" ]; then
+        log "WARNING: $STREAM_MARKER exists but all displays are off - stale marker? wakes suppressed"
+    fi
+    while screen_asleep; do
+        # Any TCP peer on Sunshine's API port except loopback, all
+        # non-listen states. TIME-WAIT/FIN residue is harmless: a retry
+        # opens a new source port, so the set-diff below re-edges.
+        # Columns: State Recv-Q Send-Q Local Peer.
+        peers=$(ss -tHn "( sport = :$PORT )" 2>/dev/null \
+            | awk '$1 != "LISTEN" {print $5}' \
+            | grep -vE '^(127\.|\[::1\])' \
+            | sort -u)
+
+        new=$(comm -13 <(printf '%s\n' "$prev") <(printf '%s\n' "$peers"))
+
+        if [ -n "$new" ]; then
+            now=$(date +%s)
+            if (( now - last_wake >= COOLDOWN )) && [ ! -e "$STREAM_MARKER" ]; then
+                log "moonlight client connected ($new) - waking display"
+                if ! "$WAKE" >/dev/null 2>&1; then
+                    log "WARNING: $WAKE exited non-zero"
+                fi
+                last_wake=$now
+            fi
+        fi
+
+        prev=$peers
+        sleep 0.5
+    done
+}
+
 last_wake=0
 
 while :; do
-    # Any socket on Sunshine's API port except LISTEN and loopback peers.
-    # Includes established + syn-recv + close/fin-wait so short-lived
-    # requests aren't missed (time-wait excluded so retries re-edge).
-    # Columns: State Recv-Q Send-Q Local Peer -> peer is $5.
-    peers=$(ss -tHn "( sport = :$PORT )" 2>/dev/null \
-        | awk '$1 != "LISTEN" {print $5}' \
-        | grep -vE '^(127\.|\[::1\])' \
-        | sort -u)
-
-    up=0
-    [ -n "$peers" ] && up=1
-
-    if [ "$up" = 1 ] && [ "$prev_up" = 0 ]; then
-        now=$(date +%s)
-        if (( now - last_wake >= COOLDOWN )) && [ ! -e "$STREAM_MARKER" ]; then
-            if screen_asleep; then
-                echo "$(date '+%F %T') moonlight client connected ($peers) - waking display"
-                if ! "$WAKE" >/dev/null 2>&1; then
-                    echo "$(date '+%F %T') WARNING: $WAKE exited non-zero"
-                fi
-            else
-                echo "$(date '+%F %T') moonlight client connected ($peers) - screen already on, skipping wake"
-            fi
-            last_wake=$now
-        fi
+    if screen_asleep; then
+        log "all displays asleep - watching for moonlight connections"
+        watch_connections
+        log "a display is on - idling"
+    else
+        sleep 2
     fi
-
-    prev_up=$up
-    sleep 0.5
 done
