@@ -16,6 +16,9 @@
 #     connection is already up
 #   - never wakes while /tmp/sunshine-streaming exists (live session —
 #     no stray Ctrl taps mid-game)
+#   - only taps when every connected display is actually asleep
+#     (drm connector dpms=Off) — no input is injected while someone
+#     is using the machine
 #   - 10s cooldown between wakes
 # Every wake is printed to stdout and lands in the journal.
 
@@ -25,6 +28,23 @@ PORT=47990
 WAKE="$HOME/scripts/wake"
 COOLDOWN=10
 STREAM_MARKER=/tmp/sunshine-streaming
+
+# True when no connected DRM connector is powered on, i.e. every physical
+# display is blanked/off. A blanked COSMIC output loses its CRTC (which is
+# why Sunshine's probe fails), and a connector without an active CRTC reads
+# dpms=Off in sysfs. Unreadable sysfs fails open (treat as asleep) so the
+# wake keeps working even if this check ever breaks.
+screen_asleep() {
+    local c
+    for c in /sys/class/drm/card*-*/; do
+        [ -r "$c/status" ] && [ -r "$c/dpms" ] || continue
+        [ "$(cat "$c/status")" = connected ] || continue
+        if [ "$(cat "$c/dpms")" = On ]; then
+            return 1
+        fi
+    done
+    return 0
+}
 
 prev_up=0
 last_wake=0
@@ -45,14 +65,18 @@ while :; do
     if [ "$up" = 1 ] && [ "$prev_up" = 0 ]; then
         now=$(date +%s)
         if (( now - last_wake >= COOLDOWN )) && [ ! -e "$STREAM_MARKER" ]; then
-            echo "$(date '+%F %T') moonlight client connected ($peers) - waking display"
-            if ! "$WAKE" >/dev/null 2>&1; then
-                echo "$(date '+%F %T') WARNING: $WAKE exited non-zero"
+            if screen_asleep; then
+                echo "$(date '+%F %T') moonlight client connected ($peers) - waking display"
+                if ! "$WAKE" >/dev/null 2>&1; then
+                    echo "$(date '+%F %T') WARNING: $WAKE exited non-zero"
+                fi
+            else
+                echo "$(date '+%F %T') moonlight client connected ($peers) - screen already on, skipping wake"
             fi
             last_wake=$now
         fi
     fi
 
     prev_up=$up
-    sleep 0.3
+    sleep 0.5
 done
