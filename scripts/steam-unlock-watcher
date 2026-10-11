@@ -3,10 +3,16 @@
 #
 # Steam has no host-side hooks for Remote Play, so we tail Steam's
 # streaming log for the "Streaming started to <client>" line written at
-# the moment a stream begins, then call `loginctl unlock-sessions`.
+# the moment a stream begins, then unlock the graphical session.
 # cosmic-greeter subscribes to the logind Unlock signal and dismisses
 # the lock screen without a password (verified against cosmic-greeter
-# epoch-1.9.0 src/logind.rs + src/locker.rs, 2026-10-11).
+# epoch-1.9.1 src/logind.rs + src/locker.rs, 2026-10-11).
+#
+# IMPORTANT: use `loginctl unlock-session <seat0-id>` (singular), NOT
+# `unlock-sessions` (plural). The plural/manager variant is polkit-gated
+# with auth_admin_keep; its auth dialog can never be approved under the
+# lock surface, so the call hangs 25s and dies with
+# "Could not lock sessions: Connection timed out" (verified live).
 #
 # Deliberately does NOT wake the physical display - the local screen
 # stays dark while the stream proceeds.
@@ -17,9 +23,20 @@ set -u
 
 LOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
 
-for cmd in tail loginctl; do
+for cmd in tail loginctl awk id; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "FATAL: $cmd not found"; exit 1; }
 done
+
+unlock_graphical_session() {
+    local sid
+    sid=$(loginctl list-sessions --no-legend 2>/dev/null \
+        | awk -v u="$(id -un)" '$3 == u && $4 == "seat0" { print $1; exit }')
+    if [ -z "$sid" ]; then
+        echo "no seat0 session found - cannot unlock"
+        return 1
+    fi
+    loginctl unlock-session "$sid" || echo "unlock-session $sid failed (exit $?)"
+}
 
 echo "watching $LOG for Remote Play stream starts"
 
@@ -30,7 +47,7 @@ tail -n0 -F "$LOG" 2>/dev/null | while IFS= read -r line; do
     *"Streaming started to"*)
         peer="${line##*Streaming started to }"
         echo "Remote Play stream started (${peer}) - unlocking session"
-        loginctl unlock-sessions
+        unlock_graphical_session
         ;;
     esac
 done
