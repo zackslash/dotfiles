@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Unlock the COSMIC session when Steam Remote Play streaming starts.
+#
+# Steam has no host-side hooks for Remote Play, so we tail Steam's
+# streaming log for the "Streaming started to <client>" line written at
+# the moment a stream begins, then call `loginctl unlock-sessions`.
+# cosmic-greeter subscribes to the logind Unlock signal and dismisses
+# the lock screen without a password (verified against cosmic-greeter
+# epoch-1.9.0 src/logind.rs + src/locker.rs, 2026-10-11).
+#
+# Deliberately does NOT wake the physical display - the local screen
+# stays dark while the stream proceeds.
+#
+# Sunshine/Moonlight streams are unaffected: those are handled by
+# Sunshine prep-cmds (see apps.json) and never reach this log path.
+set -u
+
+LOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
+
+for cmd in tail loginctl; do
+    command -v "$cmd" >/dev/null 2>&1 || { echo "FATAL: $cmd not found"; exit 1; }
+done
+
+echo "watching $LOG for Remote Play stream starts"
+
+# -n0: start at EOF so service restarts never replay old stream events
+# -F:  follow by name; survives Steam's log rotation and Steam restarts
+tail -n0 -F "$LOG" 2>/dev/null | while IFS= read -r line; do
+    case "$line" in
+    *"Streaming started to"*)
+        peer="${line##*Streaming started to }"
+        echo "Remote Play stream started (${peer}) - unlocking session"
+        loginctl unlock-sessions
+        ;;
+    esac
+done
