@@ -1,53 +1,97 @@
 #!/usr/bin/env bash
-# Unlock the COSMIC session when Steam Remote Play streaming starts.
+# Lock/unlock the COSMIC session around Steam Remote Play streaming.
 #
 # Steam has no host-side hooks for Remote Play, so we tail Steam's
-# streaming log for the "Streaming started to <client>" line written at
-# the moment a stream begins, then unlock the graphical session.
-# cosmic-greeter subscribes to the logind Unlock signal and dismisses
-# the lock screen without a password (verified against cosmic-greeter
-# epoch-1.9.1 src/logind.rs + src/locker.rs, 2026-10-11).
+# streaming log for two markers:
+#   stream start: "Streaming started to <client>"
+#   stream end:   ">>> Stopped desktop stream"
+# and unlock/lock the graphical session accordingly.
+# cosmic-greeter consumes the logind Unlock/Lock signals without a
+# password (verified against cosmic-greeter epoch-1.9.1 src/logind.rs +
+# src/locker.rs, 2026-10-11).
 #
-# IMPORTANT: use `loginctl unlock-session <seat0-id>` (singular), NOT
-# `unlock-sessions` (plural). The plural/manager variant is polkit-gated
-# with auth_admin_keep; its auth dialog can never be approved under the
-# lock surface, so the call hangs 25s and dies with
+# IMPORTANT: use `loginctl {un,}lock-session <seat0-id>` (singular), NOT
+# the plural/manager variants. Those are polkit-gated with
+# auth_admin_keep; the auth dialog can never be approved under the lock
+# surface, so the call hangs 25s and dies with
 # "Could not lock sessions: Connection timed out" (verified live).
 #
-# Deliberately does NOT wake the physical display - the local screen
-# stays dark while the stream proceeds.
+# Lock-on-end is debounced (LOCK_DELAY quiet seconds): if a new stream
+# starts within the window - e.g. a client reconnect after a network
+# blip - the pending lock is cancelled instead of flash-locking the
+# desktop mid-use.
+#
+# Deliberately does NOT wake or darken the physical display - the local
+# screen state is left to the user and cosmic-idle.
 #
 # Sunshine/Moonlight streams are unaffected: those are handled by
 # Sunshine prep-cmds (see apps.json) and never reach this log path.
 set -u
 
 LOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
+LOCK_DELAY=4   # quiet seconds after stream stop before locking
 
 for cmd in tail loginctl awk id; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "FATAL: $cmd not found"; exit 1; }
 done
 
-unlock_graphical_session() {
-    local sid
-    sid=$(loginctl list-sessions --no-legend 2>/dev/null \
-        | awk -v u="$(id -un)" '$3 == u && $4 == "seat0" { print $1; exit }')
-    if [ -z "$sid" ]; then
-        echo "no seat0 session found - cannot unlock"
-        return 1
-    fi
-    loginctl unlock-session "$sid" || echo "unlock-session $sid failed (exit $?)"
+graphical_session_id() {
+    loginctl list-sessions --no-legend 2>/dev/null \
+        | awk -v u="$(id -un)" '$3 == u && $4 == "seat0" { print $1; exit }'
 }
 
-echo "watching $LOG for Remote Play stream starts"
+session_action() {  # session_action unlock|lock
+    local action=$1 sid
+    sid=$(graphical_session_id)
+    if [ -z "$sid" ]; then
+        echo "no seat0 session found - cannot ${action} session"
+        return 1
+    fi
+    loginctl "${action}-session" "$sid" || echo "${action}-session $sid failed (exit $?)"
+}
+
+echo "watching $LOG for Remote Play stream start/stop"
+
+pending_lock=0
 
 # -n0: start at EOF so service restarts never replay old stream events
 # -F:  follow by name; survives Steam's log rotation and Steam restarts
-tail -n0 -F "$LOG" 2>/dev/null | while IFS= read -r line; do
+# The loop must be unconditional: a timed-out `read -t` returns failure,
+# which would terminate a `while read -t` loop after the first quiet
+# window (that bug crash-looped the unit every LOCK_DELAY+3s). Instead,
+# read's failure is the quiet tick that lets a pending lock fire.
+tail -n0 -F "$LOG" 2>/dev/null | while :; do
+    if ! IFS= read -r -t "$LOCK_DELAY" line; then
+        rc=$?
+        if [ "$rc" -eq 1 ] && [ -z "$line" ]; then
+            echo "FATAL: log pipe EOF (tail died)"
+            exit 1
+        fi
+        # timeout tick: no log lines for LOCK_DELAY seconds
+        line=""
+    fi
+    if [ -z "$line" ]; then
+        if [ "$pending_lock" -eq 1 ]; then
+            pending_lock=0
+            echo "Remote Play stream ended - locking session"
+            session_action lock
+        fi
+        continue
+    fi
+
     case "$line" in
     *"Streaming started to"*)
         peer="${line##*Streaming started to }"
+        pending_lock=0
         echo "Remote Play stream started (${peer}) - unlocking session"
-        unlock_graphical_session
+        session_action unlock
+        ;;
+    *"Initializing streaming"*)
+        # new stream warming up - cancel any pending lock
+        pending_lock=0
+        ;;
+    *">>> Stopped desktop stream"*)
+        pending_lock=1
         ;;
     esac
 done
