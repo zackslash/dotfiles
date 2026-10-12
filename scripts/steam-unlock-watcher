@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
-# Lock/unlock the COSMIC session around Steam Remote Play streaming.
+# Lock/unlock the COSMIC session around Steam Remote Play.
 #
-# Steam has no host-side hooks for Remote Play, so we tail Steam's
-# streaming log for two markers:
-#   stream start: "Streaming started to <client>"
-#   stream end:   ">>> Stopped desktop stream"
-# and unlock/lock the graphical session accordingly.
+# Steam has no host-side hooks for Remote Play, so we tail two of its
+# logs:
+#   streaming_log.txt       "Streaming started to <client>"  -> unlock
+#   remote_connections.txt  "Client <id> (<name>) disconnected: <reason>" -> lock
+#
+# Why presence, not ">>> Stopped desktop stream": that marker only means
+# the *desktop capture surface* ended. Steam also writes it MID-SESSION
+# when switching between desktop and in-game overlay capture
+# ("Switching video stream ... GameOverlay_MovieStream"), which
+# lock-spammed the user mid-game (2026-10-12 incident, 5 locks in 3min).
+# Presence ("Client ... disconnected") spans the whole client session:
+# capture switches and sub-10s reconnect blips do NOT flap it.
+# Lock is debounced (LOCK_DELAY quiet seconds) and cancelled by any new
+# stream start, so a client that reconnects and resumes never gets
+# flash-locked.
+#
 # cosmic-greeter consumes the logind Unlock/Lock signals without a
 # password (verified against cosmic-greeter epoch-1.9.1 src/logind.rs +
 # src/locker.rs, 2026-10-11).
@@ -16,22 +27,18 @@
 # surface, so the call hangs 25s and dies with
 # "Could not lock sessions: Connection timed out" (verified live).
 #
-# Lock-on-end is debounced (LOCK_DELAY quiet seconds): if a new stream
-# starts within the window - e.g. a client reconnect after a network
-# blip - the pending lock is cancelled instead of flash-locking the
-# desktop mid-use.
-#
 # Deliberately does NOT wake or darken the physical display - the local
 # screen state is left to the user and cosmic-idle.
 #
 # Sunshine/Moonlight streams are unaffected: those are handled by
-# Sunshine prep-cmds (see apps.json) and never reach this log path.
+# Sunshine prep-cmds (see apps.json) and never reach these logs.
 set -u
 
-LOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
-LOCK_DELAY=4   # quiet seconds after stream stop before locking
+SLOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
+RLOG="$HOME/.local/share/Steam/logs/remote_connections.txt"
+LOCK_DELAY=4   # quiet seconds after a disconnect before locking
 
-for cmd in tail loginctl awk id; do
+for cmd in tail sed loginctl awk id; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "FATAL: $cmd not found"; exit 1; }
 done
 
@@ -50,17 +57,20 @@ session_action() {  # session_action unlock|lock
     loginctl "${action}-session" "$sid" || echo "${action}-session $sid failed (exit $?)"
 }
 
-echo "watching $LOG for Remote Play stream start/stop"
+echo "watching Steam streaming + remote-connection logs"
 
 pending_lock=0
 
-# -n0: start at EOF so service restarts never replay old stream events
-# -F:  follow by name; survives Steam's log rotation and Steam restarts
+# Two tagged, unbuffered tails merged into one stream. -n0 starts at EOF
+# so service restarts never replay old events; -F survives Steam's log
+# rotation and restarts. sed -u keeps lines unbuffered so events are seen
+# immediately (sed full-buffers when writing to a pipe).
+#
 # The loop must be unconditional: a timed-out `read -t` returns failure,
 # which would terminate a `while read -t` loop after the first quiet
 # window (that bug crash-looped the unit every LOCK_DELAY+3s). Instead,
 # read's failure is the quiet tick that lets a pending lock fire.
-tail -n0 -F "$LOG" 2>/dev/null | while :; do
+while :; do
     if ! IFS= read -r -t "$LOCK_DELAY" line; then
         rc=$?
         if [ "$rc" -eq 1 ] && [ -z "$line" ]; then
@@ -73,25 +83,30 @@ tail -n0 -F "$LOG" 2>/dev/null | while :; do
     if [ -z "$line" ]; then
         if [ "$pending_lock" -eq 1 ]; then
             pending_lock=0
-            echo "Remote Play stream ended - locking session"
+            echo "Remote Play client disconnected - locking session"
             session_action lock
         fi
         continue
     fi
 
     case "$line" in
-    *"Streaming started to"*)
+    "[S] "*"Streaming started to"*)
         peer="${line##*Streaming started to }"
         pending_lock=0
         echo "Remote Play stream started (${peer}) - unlocking session"
         session_action unlock
         ;;
-    *"Initializing streaming"*)
+    "[S] "*"Initializing streaming"*)
         # new stream warming up - cancel any pending lock
         pending_lock=0
         ;;
-    *">>> Stopped desktop stream"*)
+    "[P] "*" disconnected: "*)
+        echo "Remote Play client presence ended (${line#"[P] "})"
         pending_lock=1
         ;;
     esac
-done
+done < <(
+    tail -n0 -F "$SLOG" 2>/dev/null | sed -u 's/^/[S] /' &
+    tail -n0 -F "$RLOG" 2>/dev/null | sed -u 's/^/[P] /' &
+    wait
+)
