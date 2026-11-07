@@ -32,8 +32,11 @@
 #
 # After unlock, every open window is minimized (cosmic-minimize-all) so
 # the stream shows a clean desktop until the game takes the screen.
-# Skipped when the session was already unlocked - then the user is
-# sitting at the desk and their windows are left alone.
+# Unconditional, like the unlock itself: LockedHint proved unreliable
+# (locks via cosmic-greeter directly - idle timeout or shortcut - never
+# set it; failed live test 2026-11-07). Minimize runs BEFORE the unlock
+# call so the compositor hides windows behind the lock surface while it
+# is still up.
 #
 # Sunshine/Moonlight streams are unaffected: those are handled by
 # Sunshine prep-cmds (see apps.json) and never reach these logs.
@@ -64,20 +67,17 @@ session_action() {  # session_action unlock|lock
 }
 
 unlock_and_clear_desktop() {
-    # Read the lock state BEFORE unlocking (unlocking clears it), then
-    # unlock and - only if it was locked - minimize all windows.
-    local sid locked out
+    local sid out
     sid=$(graphical_session_id)
     if [ -z "$sid" ]; then
         echo "no seat0 session found - cannot unlock session"
         return 1
     fi
-    locked=$(loginctl show-session "$sid" -p LockedHint 2>/dev/null)
-    loginctl unlock-session "$sid" || echo "unlock-session $sid failed (exit $?)"
-    if [ "$locked" = "LockedHint=yes" ] && [ -f "$MINIMIZE_ALL" ]; then
+    if [ -f "$MINIMIZE_ALL" ]; then
         out=$(python3 "$MINIMIZE_ALL" 2>&1) || echo "minimize-all failed: $out"
         echo "clearing desktop for stream: $out"
     fi
+    loginctl unlock-session "$sid" || echo "unlock-session $sid failed (exit $?)"
 }
 
 echo "watching Steam streaming + remote-connection logs"
