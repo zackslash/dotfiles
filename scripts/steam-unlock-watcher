@@ -38,6 +38,11 @@
 # call so the compositor hides windows behind the lock surface while it
 # is still up.
 #
+# On client disconnect the session relocks, and the windows minimized
+# for the stream are restored BEHIND the lock surface (matched by
+# app_id+title via STATE_FILE - not Wayland object ids, which are
+# per-connection). Windows the user minimized themselves stay minimized.
+#
 # Sunshine/Moonlight streams are unaffected: those are handled by
 # Sunshine prep-cmds (see apps.json) and never reach these logs.
 set -u
@@ -46,8 +51,9 @@ SLOG="$HOME/.local/share/Steam/logs/streaming_log.txt"
 RLOG="$HOME/.local/share/Steam/logs/remote_connections.txt"
 LOCK_DELAY=4   # quiet seconds after a disconnect before locking
 MINIMIZE_ALL="$HOME/scripts/cosmic-minimize-all"
+STATE_FILE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/steam-unlock.minimized"
 
-for cmd in tail sed loginctl awk id; do
+for cmd in tail sed cat loginctl awk id; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "FATAL: $cmd not found"; exit 1; }
 done
 
@@ -67,17 +73,45 @@ session_action() {  # session_action unlock|lock
 }
 
 unlock_and_clear_desktop() {
-    local sid out
+    local sid
     sid=$(graphical_session_id)
     if [ -z "$sid" ]; then
         echo "no seat0 session found - cannot unlock session"
         return 1
     fi
+    # Merge, never overwrite: a reconnect blip re-enters this arm with
+    # the desktop already minimized, so the new run records nothing -
+    # overwriting would destroy the pre-stream window list. Duplicates
+    # are harmless: restore matches a set and only touches handles that
+    # are still minimized.
     if [ -f "$MINIMIZE_ALL" ]; then
-        out=$(python3 "$MINIMIZE_ALL" 2>&1) || echo "minimize-all failed: $out"
-        echo "clearing desktop for stream: $out"
+        if python3 "$MINIMIZE_ALL" --remember-minimize > "$STATE_FILE.new"; then
+            { [ -f "$STATE_FILE" ] && cat "$STATE_FILE"; cat "$STATE_FILE.new"; } > "$STATE_FILE.tmp" \
+                && mv -f "$STATE_FILE.tmp" "$STATE_FILE"
+            rm -f "$STATE_FILE.new"
+            echo "cleared desktop for stream ($(wc -l < "$STATE_FILE") windows recorded)"
+        else
+            echo "minimize failed (exit $?) - $STATE_FILE left as-is"
+            rm -f "$STATE_FILE.new"
+        fi
     fi
     loginctl unlock-session "$sid" || echo "unlock-session $sid failed (exit $?)"
+}
+
+restore_windows() {
+    # Put back exactly the pre-stream window set, behind the lock
+    # surface. STATE_FILE holds one "app_id<TAB>title" line per window
+    # the stream start minimized; it survives service restarts. On
+    # restore failure the file is KEPT so the next disconnect retries.
+    if [ -f "$MINIMIZE_ALL" ] && [ -s "$STATE_FILE" ]; then
+        if python3 "$MINIMIZE_ALL" --restore-remembered < "$STATE_FILE"; then
+            rm -f "$STATE_FILE"
+        else
+            echo "restore failed (exit $?) - keeping $STATE_FILE"
+        fi
+    else
+        rm -f "$STATE_FILE"   # missing or empty: nothing to restore
+    fi
 }
 
 echo "watching Steam streaming + remote-connection logs"
@@ -94,12 +128,18 @@ pending_lock=0
 # window (that bug crash-looped the unit every LOCK_DELAY+3s). Instead,
 # read's failure is the quiet tick that lets a pending lock fire.
 while :; do
-    if ! IFS= read -r -t "$LOCK_DELAY" line; then
-        rc=$?
-        if [ "$rc" -eq 1 ] && [ -z "$line" ]; then
-            echo "FATAL: log pipe EOF (tail died)"
-            exit 1
-        fi
+    # rc MUST be captured on the read itself: `if ! read` would put the
+    # NEGATED status (always 0) into $?, and the EOF guard below would
+    # be dead code - both tails dying would hot-spin instead of exiting
+    # for systemd to restart us.
+    line=""
+    IFS= read -r -t "$LOCK_DELAY" line
+    rc=$?
+    if [ "$rc" -eq 1 ] && [ -z "$line" ]; then
+        echo "FATAL: log pipe EOF (tail died)"
+        exit 1
+    fi
+    if [ "$rc" -ne 0 ]; then
         # timeout tick: no log lines for LOCK_DELAY seconds
         line=""
     fi
@@ -108,6 +148,7 @@ while :; do
             pending_lock=0
             echo "Remote Play client disconnected - locking session"
             session_action lock
+            restore_windows
         fi
         continue
     fi

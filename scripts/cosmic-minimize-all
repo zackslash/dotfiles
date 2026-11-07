@@ -13,10 +13,20 @@ Steam Remote Play unlock, so the stream shows a clean desktop instead of
 whatever was on screen when the session locked.
 
 Modes:
-  (no arg)     minimize every non-minimized toplevel
-  --list       print all toplevels (id, state, title, app_id); no changes
-  --unminimize unset_minimized on every minimized toplevel
-  --test       minimize, wait 2s, restore what was minimized (verification)
+  (no arg)          minimize every non-minimized toplevel
+  --list            print all toplevels (id, state, title, app_id); no changes
+  --unminimize      unset_minimized on every minimized toplevel
+  --test            minimize, wait 2s, restore what was minimized (verification)
+  --remember-minimize
+                    minimize every non-minimized toplevel, then print one
+                    "app_id<TAB>title" line per minimized window on stdout
+                    (count goes to stderr) for later --restore-remembered
+  --restore-remembered
+                    read "app_id<TAB>title" lines from stdin and
+                    unset_minimized every MINIMIZED toplevel that matches
+                    one. Matching is by app_id+title, not object id:
+                    Wayland ids are per-connection, so ids from an earlier
+                    connection can point at different windows.
 """
 import os
 import socket
@@ -168,14 +178,28 @@ def main():
         print(f"{len(w.handles)} toplevel(s)")
         return
 
-    def act(ids, opcode, verb):
+    def act(ids, opcode, verb, stream=sys.stdout):
         for hid in ids:
             w.send(manager, opcode, struct.pack("<I", hid))
         w.roundtrip()
-        print(f"{verb} {len(ids)} of {len(w.handles)} toplevels")
+        print(f"{verb} {len(ids)} of {len(w.handles)} toplevels", file=stream)
 
     minimized = [hid for hid, h in w.handles.items() if 1 in h["states"]]
     visible = [hid for hid, h in w.handles.items() if 1 not in h["states"]]
+
+    if mode == "--remember-minimize":
+        act(visible, MGR_SET_MINIMIZED, "minimized", stream=sys.stderr)
+        for hid in visible:
+            h = w.handles[hid]
+            print(f"{h['app_id']}\t{h['title']}")
+        return
+
+    if mode == "--restore-remembered":
+        wanted = {tuple(line.rstrip("\n").split("\t", 1)) for line in sys.stdin if line.strip()}
+        targets = [hid for hid, h in w.handles.items()
+                   if 1 in h["states"] and (h["app_id"], h["title"]) in wanted]
+        act(targets, MGR_UNSET_MINIMIZED, "restored")
+        return
 
     if mode == "--unminimize":
         act(minimized, MGR_UNSET_MINIMIZED, "restored")
