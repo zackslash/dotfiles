@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""Minimize all windows on COSMIC (cosmic-comp).
+
+Talks the compositor's own zcosmic_toplevel_info_v1 /
+zcosmic_toplevel_manager_v1 Wayland protocols directly over the socket
+(stdlib only, no wayland bindings): binds zcosmic_toplevel_info_v1 as a
+version-1 client, so cosmic-comp sends one `toplevel` event per open
+window together with its initial `state`, then issues set_minimized for
+every non-minimized toplevel.
+
+Used by scripts/steam-unlock-watcher to clear the desktop right after a
+Steam Remote Play unlock, so the stream shows a clean desktop instead of
+whatever was on screen when the session locked.
+
+Modes:
+  (no arg)     minimize every non-minimized toplevel
+  --list       print all toplevels (id, state, title, app_id); no changes
+  --unminimize unset_minimized on every minimized toplevel
+  --test       minimize, wait 2s, restore what was minimized (verification)
+"""
+import os
+import socket
+import struct
+import sys
+import time
+
+# zcosmic_toplevel_handle_v1.state enum values
+STATE_NAMES = {0: "maximized", 1: "minimized", 2: "activated", 3: "fullscreen", 4: "sticky"}
+
+# Wire opcodes (per-interface, from the cosmic-protocols XMLs)
+DISPLAY_SYNC, DISPLAY_GET_REGISTRY = 0, 1
+REGISTRY_BIND, REGISTRY_GLOBAL = 0, 0
+INFO_TOPLEVEL = 0            # zcosmic_toplevel_info_v1 event (v1 clients)
+HANDLE_TITLE, HANDLE_APP_ID, HANDLE_STATE = 2, 3, 8
+MGR_SET_MINIMIZED, MGR_UNSET_MINIMIZED = 5, 6
+
+
+class Wayland:
+    def __init__(self):
+        runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+        candidates = ([os.environ["WAYLAND_DISPLAY"]] if os.environ.get("WAYLAND_DISPLAY")
+                      else []) + ["wayland-1", "wayland-0"]
+        for name in candidates:
+            path = os.path.join(runtime, name)
+            try:
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self.sock.connect(path)
+                break
+            except OSError:
+                self.sock.close()
+        else:
+            sys.exit("FATAL: no wayland socket found")
+        self.sock.settimeout(5)  # never wedge the watcher's stream-start arm
+        self.buf = b""
+        self.next_id = 2
+        self.iface = {1: "wl_display"}
+        self.globals = {}   # global name -> (interface, version)
+        self.handles = {}   # handle id -> {"title", "app_id", "states"}
+
+    def new_id(self, interface):
+        oid = self.next_id
+        self.next_id += 1
+        self.iface[oid] = interface
+        return oid
+
+    def send(self, oid, opcode, args=b""):
+        self.sock.sendall(struct.pack("<II", oid, ((len(args) + 8) << 16) | opcode) + args)
+
+    @staticmethod
+    def wstr(s):
+        b = s.encode() + b"\0"
+        return struct.pack("<I", len(b)) + b + b"\0" * (-len(b) % 4)
+
+    def event(self):
+        while len(self.buf) < 8:
+            if not (d := self.sock.recv(65536)):
+                sys.exit("FATAL: compositor closed the connection")
+            self.buf += d
+        oid, so = struct.unpack_from("<II", self.buf)
+        size = so >> 16
+        while len(self.buf) < size:
+            if not (d := self.sock.recv(65536)):
+                sys.exit("FATAL: compositor closed the connection")
+            self.buf += d
+        payload, self.buf = self.buf[8:size], self.buf[size:]
+        return oid, so & 0xFFFF, payload
+
+    @staticmethod
+    def rstr(p):
+        (ln,) = struct.unpack_from("<I", p)
+        return p[4:4 + ln - 1].decode(errors="replace")
+
+    def roundtrip(self):
+        """Dispatch events until the sync callback returns."""
+        cb = self.new_id("wl_callback")
+        self.send(1, DISPLAY_SYNC, struct.pack("<I", cb))
+        while True:
+            oid, op, p = self.event()
+            name = self.iface.get(oid, f"?{oid}")
+            if name == "wl_display":
+                if op == 0:  # error(object, code, message)
+                    obj, code = struct.unpack_from("<II", p)
+                    sys.exit(f"FATAL: wayland error {code} on object {obj}: {self.rstr(p[8:])}")
+                continue  # delete_id
+            if name == "wl_callback":
+                if oid == cb:
+                    return
+                continue
+            self.dispatch(name, oid, op, p)
+
+    def dispatch(self, name, oid, op, p):
+        if name == "wl_registry" and op == REGISTRY_GLOBAL:
+            gname, = struct.unpack_from("<I", p)
+            off = 4
+            (ln,) = struct.unpack_from("<I", p, off)
+            off += 4
+            iface = p[off:off + ln - 1].decode(errors="replace")
+            off += ln + (-ln % 4)
+            (ver,) = struct.unpack_from("<I", p, off)
+            self.globals[gname] = (iface, ver)
+        elif name == "zcosmic_toplevel_info_v1" and op == INFO_TOPLEVEL:
+            (hid,) = struct.unpack_from("<I", p)
+            self.iface[hid] = "zcosmic_toplevel_handle_v1"
+            self.handles[hid] = {"title": "", "app_id": "", "states": set()}
+        elif name == "zcosmic_toplevel_handle_v1":
+            h = self.handles.get(oid)
+            if h is None:
+                return
+            if op == HANDLE_TITLE:
+                h["title"] = self.rstr(p)
+            elif op == HANDLE_APP_ID:
+                h["app_id"] = self.rstr(p)
+            elif op == HANDLE_STATE:
+                (ln,) = struct.unpack_from("<I", p)
+                h["states"] = {v for v in struct.unpack_from(f"<{ln // 4}I", p, 4)
+                               if v in STATE_NAMES}
+
+
+def main():
+    mode = sys.argv[1] if len(sys.argv) > 1 else "--minimize"
+
+    w = Wayland()
+    registry = w.new_id("wl_registry")
+    w.send(1, DISPLAY_GET_REGISTRY, struct.pack("<I", registry))
+    w.roundtrip()
+
+    def bind(interface, version):
+        for gname, (iname, advertised) in w.globals.items():
+            if iname == interface:
+                oid = w.new_id(interface)
+                w.send(registry, REGISTRY_BIND,
+                       struct.pack("<I", gname) + w.wstr(interface)
+                       + struct.pack("<II", version, oid))
+                return oid
+        sys.exit(f"FATAL: {interface} not advertised by compositor")
+
+    # v1 info binding = the deprecated `toplevel`-event path, which is
+    # exactly what we want: the server pushes every open window at us.
+    bind("zcosmic_toplevel_info_v1", 1)
+    manager = bind("zcosmic_toplevel_manager_v1", 1)
+    w.roundtrip()
+    w.roundtrip()  # defensive second pass for late state events
+
+    if mode == "--list":
+        for hid, h in sorted(w.handles.items()):
+            states = ",".join(STATE_NAMES[s] for s in sorted(h["states"])) or "-"
+            print(f"{hid:>4} [{states:<24}] {h['title']}  ({h['app_id']})")
+        print(f"{len(w.handles)} toplevel(s)")
+        return
+
+    def act(ids, opcode, verb):
+        for hid in ids:
+            w.send(manager, opcode, struct.pack("<I", hid))
+        w.roundtrip()
+        print(f"{verb} {len(ids)} of {len(w.handles)} toplevels")
+
+    minimized = [hid for hid, h in w.handles.items() if 1 in h["states"]]
+    visible = [hid for hid, h in w.handles.items() if 1 not in h["states"]]
+
+    if mode == "--unminimize":
+        act(minimized, MGR_UNSET_MINIMIZED, "restored")
+    elif mode == "--test":
+        act(visible, MGR_SET_MINIMIZED, "minimized")
+        time.sleep(2)
+        act(visible, MGR_UNSET_MINIMIZED, "restored")
+    else:
+        act(visible, MGR_SET_MINIMIZED, "minimized")
+
+
+if __name__ == "__main__":
+    main()
