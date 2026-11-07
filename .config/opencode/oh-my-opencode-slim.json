@@ -84,13 +84,13 @@
 		"presets": {
 			"default": {
 				"alpha": {
-					"model": "opencode-go/qwen3.7-max"
+					"model": "opencode-go/qwen3.8-max"
 				},
 				"beta": {
 					"model": "opencode-go/deepseek-v4-pro"
 				},
 				"gamma": {
-					"model": "opencode-go/kimi-k2.6"
+					"model": "opencode-go/kimi-k3.1-pro"
 				}
 			},
 		"quick": {
